@@ -1,25 +1,15 @@
 export function Team() {
   const team = [
     {
-      name: "Sarah Chen",
+      name: "Hasan Raza",
       role: "Founder & Creative Director",
-      image: "/professional-asian-woman-minimal-portrait-headshot.jpg",
+      image: "/hasan.jpg",
     },
     {
-      name: "Marcus Reid",
+      name: "M. Hassan",
       role: "Technical Lead",
-      image: "/professional-man-minimal-portrait-headshot.jpg",
-    },
-    {
-      name: "Elena Vasquez",
-      role: "Design Director",
-      image: "/professional-latina-woman-portrait-headshot.jpg",
-    },
-    {
-      name: "James Okonkwo",
-      role: "Strategy Director",
-      image: "/professional-african-man-portrait-headshot.jpg",
-    },
+      image: "/hasan.jpg",
+    }
   ]
 
   return (
