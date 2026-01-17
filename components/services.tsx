@@ -1,44 +1,44 @@
-import { Code2, Palette, Lightbulb, Rocket, BarChart3, Headphones } from "lucide-react"
+import { Code2, Headphones, ShoppingCart, Layers, Cpu, Settings } from "lucide-react"
 
 export function Services() {
   const services = [
     {
-      icon: Palette,
-      title: "Brand & Identity",
-      description: "Strategic brand development that captures your essence and resonates with your audience.",
+      icon: Code2,
+      title: "Web & Mobile Apps",
+      description: "Lightning-fast apps and websites, built for performance, simplicity, and seamless user experience.",
       number: "01",
     },
     {
-      icon: Code2,
-      title: "Web Development",
-      description: "Lightning-fast, accessible websites built with modern technologies and best practices.",
+      icon: ShoppingCart,
+      title: "eCommerce Solutions",
+      description: "Create online stores that are simple to manage, fully integrated, and ready for a global audience.",
       number: "02",
     },
     {
-      icon: Lightbulb,
-      title: "Product Design",
-      description: "User-centered design that transforms complex problems into elegant solutions.",
+      icon: Layers,
+      title: "ERP / CRM / HRM",
+      description: "Streamline operations with tailor-made systems that boost productivity and clarity.",
       number: "03",
     },
     {
-      icon: Rocket,
-      title: "Digital Strategy",
-      description: "Data-driven strategies that align technology with your business objectives.",
+      icon: Cpu,
+      title: "POS & Hardware Integration",
+      description: "Connect your devices, from printers to scanners, for effortless business operations.",
       number: "04",
     },
     {
-      icon: BarChart3,
-      title: "Growth & SEO",
-      description: "Organic growth strategies that increase visibility and drive qualified traffic.",
+      icon: Settings,
+      title: "Automation",
+      description: "Automate workflows, optimize processes, and make smarter, data-driven decisions.",
       number: "05",
     },
     {
       icon: Headphones,
-      title: "Ongoing Support",
-      description: "Dedicated partnership ensuring your digital presence evolves with your business.",
+      title: "Support & Maintenance",
+      description: "Reliable, ongoing support to keep your digital presence evolving with your business.",
       number: "06",
     },
-  ]
+  ];
 
   return (
     <section id="services" className="py-32 px-6 lg:px-8 relative">

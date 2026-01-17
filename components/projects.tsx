@@ -28,7 +28,7 @@ export function Projects() {
   return (
     <section id="work" className="py-32 px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+        {/* Header - Kept exactly like your first version */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-20">
           <div className="space-y-4">
             <p className="text-sm font-medium text-accent uppercase tracking-widest">Selected work</p>
@@ -47,47 +47,53 @@ export function Projects() {
           </a>
         </div>
 
-        {/* Projects */}
-        <div className="space-y-8">
+        {/* Projects - Now with Stacking Effect */}
+        <div className="flex flex-col gap-12 lg:gap-16">
           {projects.map((project, index) => (
-            <a key={project.title} href="#" className="group block">
-              <div className="relative overflow-hidden rounded-2xl bg-secondary/50 border border-border hover:border-accent/40 transition-all duration-500">
-                <div className="grid lg:grid-cols-2 gap-8 p-6 lg:p-8">
-                  {/* Content */}
-                  <div className={`flex flex-col justify-between space-y-8 ${index % 2 === 1 ? "lg:order-2" : ""}`}>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-medium text-accent uppercase tracking-wider">
-                          {project.category}
-                        </span>
-                        <span className="text-muted-foreground/30">—</span>
-                        <span className="text-xs text-muted-foreground">{project.year}</span>
+            <div 
+              key={project.title} 
+              className="sticky top-12 lg:top-24" // This makes the card "Stuck"
+              style={{ paddingTop: `${index * 20}px` }} // Optional: slight offset so you see the edges of previous cards
+            >
+              <a href="#" className="group block">
+                <div className="relative overflow-hidden rounded-2xl bg-secondary border border-border hover:border-accent/40 transition-all duration-500 shadow-2xl shadow-black/10">
+                  <div className="grid lg:grid-cols-2 gap-8 p-6 lg:p-8">
+                    {/* Content */}
+                    <div className={`flex flex-col justify-between space-y-8 ${index % 2 === 1 ? "lg:order-2" : ""}`}>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-medium text-accent uppercase tracking-wider">
+                            {project.category}
+                          </span>
+                          <span className="text-muted-foreground/30">—</span>
+                          <span className="text-xs text-muted-foreground">{project.year}</span>
+                        </div>
+                        <h3 className="text-3xl sm:text-4xl font-semibold text-foreground group-hover:text-accent transition-colors duration-300">
+                          {project.title}
+                        </h3>
+                        <p className="text-muted-foreground text-lg leading-relaxed max-w-md">{project.description}</p>
                       </div>
-                      <h3 className="text-3xl sm:text-4xl font-semibold text-foreground group-hover:text-accent transition-colors duration-300">
-                        {project.title}
-                      </h3>
-                      <p className="text-muted-foreground text-lg leading-relaxed max-w-md">{project.description}</p>
+                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground group-hover:text-accent transition-colors">
+                        View case study
+                        <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground group-hover:text-accent transition-colors">
-                      View case study
-                      <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </div>
-                  </div>
 
-                  {/* Image */}
-                  <div
-                    className={`relative aspect-[4/3] overflow-hidden rounded-xl bg-muted ${index % 2 === 1 ? "lg:order-1" : ""}`}
-                  >
-                    <img
-                      src={project.image || "/placeholder.svg"}
-                      alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-foreground/5 group-hover:bg-transparent transition-colors duration-300" />
+                    {/* Image */}
+                    <div
+                      className={`relative aspect-[4/3] overflow-hidden rounded-xl bg-muted ${index % 2 === 1 ? "lg:order-1" : ""}`}
+                    >
+                      <img
+                        src={project.image || "/placeholder.svg"}
+                        alt={project.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-foreground/5 group-hover:bg-transparent transition-colors duration-300" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </a>
+              </a>
+            </div>
           ))}
         </div>
       </div>
