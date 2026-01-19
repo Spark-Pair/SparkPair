@@ -3,6 +3,8 @@
 import { useRef } from "react"
 import { ArrowUpRight } from "lucide-react"
 import { motion, useScroll, useTransform } from "framer-motion"
+import { SectionHeader } from "./section-header";
+import { SectionWatermark } from "./section-watermark";
 
 export function Projects() {
   const projects = [
@@ -12,21 +14,18 @@ export function Projects() {
   ]
 
   return (
-    <section id="work" className="py-32 bg-[#f8f8f8]">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        
-        {/* Clean Professional Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-24">
-          <div className="space-y-4">
-            <span className="text-xs font-bold tracking-[0.3em] text-accent uppercase italic">Case Studies</span>
-            <h2 className="text-5xl lg:text-8xl font-bold tracking-tight text-black leading-[0.9]">
-              Featured <br /> Projects
-            </h2>
-          </div>
-          <p className="text-gray-500 max-w-[300px] text-lg font-light leading-snug">
-            Transforming complex ideas into simple, functional digital products.
-          </p>
-        </div>
+    <section id="work" className="py-40 px-6 lg:px-8 relative overflow-hidden bg-[#fcfcfc]">
+      {/* Background Studio Detail */}
+      <SectionWatermark text="PORTFOLIO" />
+
+      <div className="relative max-w-6xl mx-auto">
+        {/* Header */}
+        <SectionHeader 
+          label="Case Studies"
+          title="Featured"
+          italicTitle="projects"
+          description="Transforming complex ideas into simple, functional digital products."
+        />
 
         {/* The Stack Container */}
         <div className="flex flex-col gap-20">

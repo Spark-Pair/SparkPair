@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { ArrowUpRight, Check } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function CTA() {
   const [email, setEmail] = useState("")
@@ -20,29 +21,75 @@ export function CTA() {
   }
 
   return (
-    <section id="contact" className="py-32 px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="relative overflow-hidden rounded-3xl bg-foreground text-background p-12 lg:p-20">
-          {/* Background decorations with brand orange */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-accent/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+    <section id="contact" className="py-40 px-6 lg:px-8 relative overflow-hidden bg-[#fcfcfc]">
+      <motion.div 
+        initial={{ opacity: 0, y: 60 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-6xl mx-auto"
+      >
+        <div className="relative overflow-hidden rounded-4xl bg-foreground text-background p-12 lg:p-20">
+          {/* Background decorations - Animated */}
+          <motion.div 
+            animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.4, 0.3] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute top-0 right-0 w-96 h-96 bg-accent/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" 
+          />
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            className="absolute bottom-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" 
+          />
 
           <div className="relative grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div className="space-y-6">
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-tight tracking-tight text-balance">
-                Ready to start
-                <br />
-                something great?
-              </h2>
-              <p className="text-background/70 text-lg leading-relaxed max-w-md">
-                Let's discuss your next project. We'd love to hear about your ideas and explore how we can help bring
-                them to life.
-              </p>
+              <div className=""> {/* Parent wrapper */}
+                {/* First Line Wrapper */}
+                <div className="overflow-hidden"> 
+                  <motion.h2 
+                    initial={{ y: "100%" }} // 100% niche se shuru hoga
+                    whileInView={{ y: 0 }}
+                    transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    viewport={{ once: true }}
+                    className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-tight tracking-tight text-balance"
+                  >
+                    Ready to start
+                  </motion.h2>
+                </div>
+                {/* Second Line Wrapper */}
+                <div className="overflow-hidden">
+                  <motion.h2 
+                    initial={{ y: "-100%" }} // Dono ko niche se hi aana chahiye premium look ke liye
+                    whileInView={{ y: 0 }}
+                    transition={{ duration: 1, delay: 0.6, ease: [0.16, 1, 0.3, 1] }} // Delay thoda zyada taake sequence bane
+                    viewport={{ once: true }}
+                    className="text-4xl sm:text-5xl lg:text-6xl leading-tight tracking-tight text-balance italic font-serif font-light opacity-60"
+                  >
+                    something great?
+                  </motion.h2>
+                </div>
+              </div>
+              <motion.p 
+                initial={{ opacity: 0, x: -40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1, delay: 0.5 }}
+                viewport={{ once: true }}
+                className="text-background/70 text-lg leading-relaxed max-w-md font-light"
+              >
+                Let's discuss your next project. We'd love to hear about your ideas and explore how we can help bring them to life.
+              </motion.p>
             </div>
 
             {/* Right Form */}
-            <div className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Input
@@ -51,29 +98,48 @@ export function CTA() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="flex-1 h-14 px-6 rounded-full bg-background/10 border-background/20 text-background placeholder:text-background/50 focus-visible:ring-accent"
+                    className="flex-1 h-14 px-6 rounded-full bg-background/10 border-background/20 text-background placeholder:text-background/50 focus-visible:ring-accent transition-all duration-300"
                   />
                   <Button
                     type="submit"
                     size="lg"
-                    className="h-14 px-8 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 group"
+                    className="h-14 px-8 rounded-full bg-accent text-accent-foreground hover:scale-105 transition-all duration-500 group relative overflow-hidden"
                     disabled={isSubmitted}
                   >
-                    {isSubmitted ? (
-                      <>
-                        <Check className="w-5 h-5 mr-2" />
-                        Sent!
-                      </>
-                    ) : (
-                      <>
-                        Get in touch
-                        <ArrowUpRight className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                      </>
-                    )}
+                    <AnimatePresence mode="wait">
+                      {isSubmitted ? (
+                        <motion.div
+                          key="check"
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: -20, opacity: 0 }}
+                          className="flex items-center"
+                        >
+                          <Check className="w-5 h-5 mr-2" />
+                          Sent!
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="text"
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: -20, opacity: 0 }}
+                          className="flex items-center"
+                        >
+                          Get in touch
+                          <ArrowUpRight className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </Button>
                 </div>
               </form>
-              <p className="text-sm text-background/50">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="text-sm text-background/50"
+              >
                 Or email us directly at{" "}
                 <a
                   href="mailto:hello@sparkpair.com"
@@ -81,11 +147,11 @@ export function CTA() {
                 >
                   hello@sparkpair.com
                 </a>
-              </p>
-            </div>
+              </motion.p>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

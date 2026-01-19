@@ -79,7 +79,7 @@ export function Footer() {
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
               className="text-[12vw] font-bold leading-[0.8] tracking-tighter text-center"
             >
-              SparkPair<span className="text-accent">.</span>
+              SparkPair
             </motion.h1>
             
             <motion.div 
