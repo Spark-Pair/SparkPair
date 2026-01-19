@@ -7,8 +7,8 @@ import { SectionWatermark } from "./section-watermark";
 
 export function Team() {
   const team = [
-    { id: "01", name: "Hasan Raza", role: "Co-Founder & Creative Lead", image: "/hasan.jpg" },
-    { id: "02", name: "Muhammad Hassan Raza", role: "Co-Founder & Technical Lead", image: "/hasan.jpg" },
+    { id: "01", name: "Hasan Raza", role: "Co-Founder & Creative Lead", image: "/hasan.png" },
+    { id: "02", name: "Muhammad Hassan Raza", role: "Co-Founder & Technical Lead", image: "/hasan.png" },
   ];  
 
   return (
