@@ -1,155 +1,438 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowUpRight, Play } from "lucide-react"
+import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion"
 
 export function Hero() {
+  const [loading, setLoading] = useState(true)
+  const [progress, setProgress] = useState(0)
+
+  function Counter({ value }: { value: number }) {
+    const { count } = useSpring({ count: 0 }); // Agar Framer use kar rahe hain toh simple display bhi chalega
+    // Simple Framer Motion implementation:
+    return (
+      <motion.span
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        onUpdate={(latest) => Math.round(latest)}
+      >
+        {/* Agar aap Framer Motion useSpring use nahi karna chahte, toh niche wala code use karein: */}
+        <motion.span
+          initial={{ y: 10, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          {value}
+        </motion.span>
+      </motion.span>
+    );
+  }
+
+  // Loading Screen Logic
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(timer)
+          setTimeout(() => setLoading(false), 600)
+          return 100
+        }
+        return prev + 1
+      })
+    }, 15) // Thora fast progress
+    return () => clearInterval(timer)
+  }, [])
+
+  // Aesthetic Animation Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.08, 
+        delayChildren: 0.4,
+      },
+    },
+  }
+
+  // Smooth slide up with "Spring" physics
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      filter: "blur(0px)",
+      transition: { 
+        duration: 1.2, 
+        ease: [0.16, 1, 0.3, 1] // Custom "Expo" easing
+      } 
+    },
+  }
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-6 lg:px-8 overflow-hidden selection:bg-accent/20">
-      
-      {/* 1. Improved Background & Texture */}
-      {/* Noise Texture (Inline SVG for self-contained grain effect) */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-overlay">
-        <svg className="h-full w-full">
-          <filter id="noiseFilter">
-            <feTurbulence type="fractalNoise" baseFrequency="0.6" stitchTiles="stitch" />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-        </svg>
-      </div>
+    <>
+      <AnimatePresence mode="wait">
+        {loading && (
+          <motion.div
+            key="loader"
+            exit={{ 
+              y: "-100%", 
+              transition: { duration: 1.1, ease: [0.85, 0, 0.15, 1] } 
+            }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#F9F9F9] text-[#121212] overflow-hidden"
+          >
+            {/* 1. ARCHITECTURAL GRID (Light Version) */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+              <div className="absolute inset-0" style={{ 
+                backgroundImage: `linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)`,
+                backgroundSize: '4vw 4vw' 
+              }} />
+            </div>
 
-      {/* Floating Blobs with softer blur and better positioning */}
-      <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px] animate-float opacity-70" />
-      <div
-        className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px] animate-float opacity-60"
-        style={{ animationDelay: "2s", animationDirection: "reverse" }}
-      />
+            {/* 2. AMBIENT SOFT LIGHT (Instead of Glow) */}
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.1, 1],
+                opacity: [0.4, 0.6, 0.4] 
+              }}
+              transition={{ duration: 5, repeat: Infinity }}
+              className="absolute w-[60vw] h-[60vw] bg-accent/5 rounded-full blur-[100px] pointer-events-none"
+            />
 
-      <div className="relative z-10 max-w-5xl mx-auto w-full pt-20 lg:pt-32">
-        <div className="flex flex-col items-center text-center space-y-10">
-          
-          {/* 2. Refined Badge: Glassmorphic look */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/40 bg-background/50 backdrop-blur-sm shadow-sm hover:border-accent/50 transition-colors duration-300">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
-            </span>
-            <span className="text-xs font-medium text-foreground/80 tracking-wide uppercase">Available for new projects</span>
-          </div>
-
-          {/* 3. Headline: Better spacing, serif contrast, and animated SVG */}
-          <div className="space-y-6">
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-foreground leading-[1.1] sm:leading-[0.95] tracking-tight text-balance">
-              Digital solutions
-              <br />
-              {/* Mixed font-family for visual interest (assuming you have a serif font, otherwise falls back to sans italic) */}
-              <span className="font-serif italic font-light text-muted-foreground tracking-normal mr-3 sm:mr-4">
-                that spark
-              </span>
-              <span className="relative inline-block text-foreground">
-                growth
-                {/* SVG with CSS drawing animation */}
-                <svg 
-                  className="absolute -bottom-2 left-0 w-full h-3 sm:h-5" 
-                  viewBox="0 0 200 12" 
-                  fill="none"
-                  style={{ overflow: 'visible' }}
-                >
-                  <path
-                    d="M2 10C50 4 150 4 198 10"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    className="text-accent animate-draw"
-                    strokeDasharray="200"
-                    strokeDashoffset="200"
-                  />
-                </svg>
-              </span>
-            </h1>
-          </div>
-
-          {/* Subheadline: Improved readability */}
-          <p className="text-lg text-muted-foreground/90 max-w-xl leading-relaxed text-balance font-light">
-            We partner with ambitious brands to create exceptional digital experiences through strategy, design, and
-            technology.
-          </p>
-
-          {/* 4. Buttons: Added glow and better hover states */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2 w-full justify-center">
-            <Button
-              size="lg"
-              className="h-14 px-8 rounded-full text-base font-medium bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20 hover:shadow-accent/30 hover:-translate-y-0.5 transition-all duration-300 group"
-            >
-              Start a project
-              <ArrowUpRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-14 px-8 rounded-full text-base bg-background/50 backdrop-blur-sm border-border hover:bg-secondary/50 hover:text-foreground transition-all duration-300"
-            >
-              <Play className="w-3.5 h-3.5 mr-2 fill-current" />
-              Watch showreel
-            </Button>
-          </div>
-
-          {/* 5. Stats: Added dividers and improved responsive layout */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 pt-16 mt-8 border-t border-border/60 w-full max-w-4xl relative">
-             {/* Gradient fade on edges of border line */}
-            <div className="absolute top-0 left-0 w-20 h-[1px] bg-gradient-to-r from-background to-transparent -mt-[1px]" />
-            <div className="absolute top-0 right-0 w-20 h-[1px] bg-gradient-to-l from-background to-transparent -mt-[1px]" />
-
-            {[
-              { value: "150+", label: "Projects delivered" },
-              { value: "8yrs", label: "Experience" },
-              { value: "98%", label: "Client satisfaction" },
-              { value: "12", label: "Design Awards" },
-            ].map((stat, index) => (
-              <div key={stat.label} className="flex flex-col items-center justify-center relative">
-                {/* Vertical Divider for desktop */}
-                {index !== 0 && (
-                  <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-px h-8 bg-border/60 -ml-6" />
-                )}
-                <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">{stat.value}</p>
-                <p className="text-sm font-medium text-muted-foreground mt-1">{stat.label}</p>
+            <div className="relative z-10 flex flex-col items-center">
+              
+              {/* TOP DATA POINTS */}
+              <div className="absolute -top-32 flex gap-16 opacity-40">
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] uppercase tracking-[0.4em] mb-1 font-bold">Latency</span>
+                  <span className="text-[10px] font-mono">0.004MS</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[8px] uppercase tracking-[0.4em] mb-1 font-bold">Node</span>
+                  <span className="text-[10px] font-mono">ASSET_LOAD</span>
+                </div>
               </div>
-            ))}
+
+              {/* MAIN KINETIC COUNTER */}
+              <div className="relative">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1 }}
+                  className="relative flex items-center"
+                >
+                  {/* Ghost Number (Light Mode) */}
+                  <span className="absolute text-[20vw] font-bold text-black/[0.02] tracking-tighter italic select-none -translate-x-1/4">
+                    {progress}
+                  </span>
+
+                  <div className="flex items-baseline relative z-10">
+                    <span className="text-[14vw] font-serif italic font-light leading-none tabular-nums tracking-tighter">
+                      {progress}
+                    </span>
+                    <span className="text-[2vw] font-sans font-black text-accent mb-4 ml-2">
+                      %
+                    </span>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* THE PROGRESS "SCANLINE" */}
+              <div className="mt-12 w-[25vw] h-[1px] bg-black/5 relative overflow-hidden">
+                <motion.div 
+                  className="absolute inset-0 bg-black shadow-[0_0_10px_rgba(0,0,0,0.1)]"
+                  initial={{ left: "-100%" }}
+                  animate={{ left: `${progress - 100}%` }}
+                  transition={{ ease: "linear" }}
+                />
+              </div>
+
+              {/* DYNAMIC STATUS */}
+              <div className="mt-16 flex flex-col items-center gap-6">
+                <div className="h-4 overflow-hidden relative w-48 text-center">
+                  <AnimatePresence mode="popLayout">
+                    <motion.p 
+                      key={progress}
+                      initial={{ y: 15, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -15, opacity: 0 }}
+                      className="text-[10px] uppercase tracking-[0.4em] font-bold text-black/40"
+                    >
+                      {progress < 40 ? "Assembling Vision" : progress < 80 ? "Rendering Context" : "Studio Ready"}
+                    </motion.p>
+                  </AnimatePresence>
+                </div>
+
+                {/* Light Minimal Spinner */}
+                <div className="w-6 h-6 border-[1px] border-black/5 rounded-full flex items-center justify-center p-1">
+                  <motion.div 
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="w-full h-full border-t-[1px] border-accent rounded-full"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* CORNER METADATA */}
+            <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end opacity-20">
+              <span className="text-[9px] font-mono tracking-widest uppercase italic">Design Engine v.2.6</span>
+              <span className="text-[9px] font-mono tracking-widest uppercase">Global / {new Date().getFullYear()}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <section className="relative min-h-screen flex items-center justify-center px-6 lg:px-8 overflow-hidden selection:bg-accent/20">
+        {/* Background Elements (Exactly as yours) */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0 mix-blend-overlay">
+          <svg className="h-full w-full">
+            <filter id="noiseFilter">
+              <feTurbulence type="fractalNoise" baseFrequency="0.6" stitchTiles="stitch" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+          </svg>
+        </div>
+
+        <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px] animate-float opacity-70" />
+        <div
+          className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px] animate-float opacity-60"
+          style={{ animationDelay: "2s", animationDirection: "reverse" }}
+        />
+
+        {/* Content Wrapper */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate={loading ? "hidden" : "visible"}
+          className="relative z-10 max-w-5xl mx-auto w-full pt-20 lg:pt-32"
+        >
+          <div className="flex flex-col items-center text-center space-y-10">
+            
+            {/* Badge Reveal */}
+            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/40 bg-background/50 backdrop-blur-sm shadow-sm hover:border-accent/50 transition-colors duration-300 cursor-default">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
+              </span>
+              <span className="text-xs font-medium text-foreground/80 tracking-wide uppercase">Available for new projects</span>
+            </motion.div>
+
+            {/* Headline with Mask Effect (Keeping your original UI/Tags) */}
+            <motion.div variants={itemVariants} className="space-y-6">
+              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-foreground leading-[1.1] sm:leading-[0.95] tracking-tight text-balance">
+                
+                {/* Line 1: Digital Solutions - Atmospheric Reveal */}
+                <motion.span
+                  initial={{ opacity: 0, filter: "blur(20px)", y: 40, scale: 1.1 }}
+                  animate={!loading ? { opacity: 1, filter: "blur(0px)", y: 0, scale: 1 } : {}}
+                  transition={{ 
+                    duration: 1.8, 
+                    delay: 0.6, 
+                    ease: [0.19, 1, 0.22, 1] // Extreme exponential ease
+                  }}
+                  className="inline-block"
+                >
+                  Digital solutions
+                </motion.span>
+
+                <br />
+
+                {/* Line 2: That Spark Growth - Elegant Perspective Reveal */}
+                <motion.div
+                  initial={{ opacity: 0, filter: "blur(15px)", y: 30, skewX: -20, scale: 0.9 }}
+                  animate={!loading ? { opacity: 1, filter: "blur(0px)", y: 0, skewX: 0, scale: 1 } : {}}
+                  transition={{ 
+                    duration: 1.2, 
+                    delay: 0.7, 
+                    ease: [0.19, 1, 0.22, 1] 
+                  }}
+                  className="flex flex-wrap justify-center items-baseline origin-center"
+                >
+                  <span className="font-serif italic font-light text-muted-foreground tracking-normal mr-3 sm:mr-4">
+                    that spark
+                  </span>
+                  
+                  <span className="relative inline-block text-foreground">
+                    growth
+                    <svg 
+                      className="absolute -bottom-2 left-0 w-full h-3 sm:h-5" 
+                      viewBox="0 0 200 12" 
+                      fill="none"
+                      style={{ overflow: 'visible' }}
+                    >
+                      <motion.path
+                        d="M2 10C50 4 150 4 198 10"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        className="text-accent"
+                        initial={{ pathLength: 0, opacity: 0, pathOffset: 1 }}
+                        animate={!loading ? { pathLength: 1, opacity: 1, pathOffset: 0 } : {}}
+                        transition={{ delay: 1.2, duration: 1.5, ease: "easeInOut" }}
+                      />
+                    </svg>
+                  </span>
+                </motion.div>
+              </h1>
+            </motion.div>
+
+            {/* Subheadline Fade */}
+            <motion.p 
+              className="text-lg text-muted-foreground/90 max-w-xl leading-relaxed text-balance font-light flex flex-wrap justify-center overflow-hidden"
+            >
+              {"We partner with ambitious brands to create exceptional digital experiences through strategy, design, and technology."
+                .split(" ")
+                .map((word, i) => (
+                  <span key={i} className="inline-block mr-[0.3em]">
+                    <motion.span
+                      initial={{ 
+                        opacity: 0, 
+                        y: 15, 
+                        rotateX: 25,
+                        skewX: 10
+                      }}
+                      animate={!loading ? { 
+                        opacity: 1, 
+                        y: 0, 
+                        rotateX: 0,
+                        skewX: 0
+                      } : {}}
+                      transition={{ 
+                        duration: 1, 
+                        delay: 1 + (i * 0.02), // Signature stagger
+                        ease: [0.215, 0.61, 0.355, 1] // Awwwards standard cubic-bezier
+                      }}
+                      className="inline-block origin-bottom"
+                    >
+                      {word}
+                    </motion.span>
+                  </span>
+                ))}
+            </motion.p>
+            
+            {/* Buttons - Elastic hover added */}
+            <motion.div 
+              initial={{ opacity: 0, y: -30, skewX: -50, scale: 0.4 }}
+              animate={!loading ? { opacity: 1, y: 0, skewX: 0, scale: 1 } : {}}
+              transition={{ 
+                duration: 1, 
+                delay: 0.6, 
+                ease: [0.19, 1, 0.22, 1] 
+              }}
+              className="flex flex-col sm:flex-row gap-4 pt-2 w-full justify-center"
+            >
+              <Button
+                size="lg"
+                asChild
+                className="h-14 px-8 rounded-full text-base font-medium bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all duration-300 group cursor-pointer"
+              >
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center">
+                  Start a project
+                  <ArrowUpRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </motion.div>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className="h-14 px-8 rounded-full text-base bg-background/50 backdrop-blur-sm border-border hover:bg-secondary/50 hover:text-foreground transition-all duration-300 cursor-pointer"
+              >
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center">
+                  <Play className="w-3.5 h-3.5 mr-2 fill-current" />
+                  Watch showreel
+                </motion.div>
+              </Button>
+            </motion.div>
+
+            {/* Stats - Sequential Reveal with Number Counter & Masked Text Reveal */}
+            <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 pt-16 mt-8 border-t border-border/60 w-full max-w-4xl relative">
+              {[
+                { value: 150, suffix: "+", label: "Projects delivered" },
+                { value: 8, suffix: "yrs", label: "Experience" },
+                { value: 98, suffix: "%", label: "Client satisfaction" },
+                { value: 12, suffix: "", label: "Design Awards" },
+              ].map((stat, index) => {
+                const springValue = useSpring(0, { stiffness: 40, damping: 20 });
+                const displayValue = useTransform(springValue, (latest) => Math.round(latest));
+
+                useEffect(() => {
+                  if (!loading) {
+                    const timer = setTimeout(() => {
+                      springValue.set(stat.value);
+                    }, 1000 + (index * 150)); // Syncing with entrance
+                    return () => clearTimeout(timer);
+                  }
+                }, [loading, stat.value, springValue, index]);
+
+                return (
+                  <div key={stat.label} className="flex flex-col items-center justify-center">
+                    {/* Number Reveal Mask */}
+                    <div className="overflow-hidden">
+                      <motion.div
+                        initial={{ y: "100%", opacity: 0 }}
+                        animate={!loading ? { y: 0, opacity: 1 } : {}}
+                        transition={{ 
+                          duration: 1, 
+                          delay: 0.8 + (index * 0.1), 
+                          ease: [0.16, 1, 0.3, 1] 
+                        }}
+                        className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight tabular-nums"
+                      >
+                        <motion.span>{displayValue}</motion.span>
+                        {stat.suffix}
+                      </motion.div>
+                    </div>
+
+                    {/* Label Reveal Mask */}
+                    <div className="overflow-hidden">
+                      <motion.p
+                        initial={{ y: "100%", opacity: 0 }}
+                        animate={!loading ? { y: 0, opacity: 1 } : {}}
+                        transition={{ 
+                          duration: 1, 
+                          delay: 0.9 + (index * 0.1), 
+                          ease: [0.16, 1, 0.3, 1] 
+                        }}
+                        className="text-sm font-medium text-muted-foreground mt-1"
+                      >
+                        {stat.label}
+                      </motion.p>
+                    </div>
+                  </div>
+                );
+              })}
+            </motion.div>
           </div>
-        </div>
-      </div>
+        </motion.div>
 
-      {/* Scroll indicator: Smoother animation */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 opacity-50 hover:opacity-100 transition-opacity duration-500">
-        <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Scroll</span>
-        <div className="w-[1px] h-12 bg-gradient-to-b from-muted-foreground/20 to-muted-foreground overflow-hidden relative">
-             <div className="absolute top-0 left-0 w-full h-1/2 bg-accent animate-scroll-down"></div>
-        </div>
-      </div>
+        {/* Improved Scroll indicator */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={loading ? { opacity: 0 } : { opacity: 0.5, y: 0 }}
+          transition={{ delay: 2, duration: 1 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
+        >
+          <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Scroll</span>
+          <div className="w-[1px] h-12 bg-gradient-to-b from-muted-foreground/20 to-muted-foreground overflow-hidden relative">
+            <motion.div 
+              animate={{ top: ["-100%", "100%"] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute left-0 w-full h-1/2 bg-accent" 
+            />
+          </div>
+        </motion.div>
 
-      {/* Styles for the custom animations to avoid external dependencies */}
-      <style jsx>{`
-        @keyframes draw {
-          to { stroke-dashoffset: 0; }
-        }
-        .animate-draw {
-          animation: draw 1.5s ease-out forwards;
-        }
-        @keyframes float {
-          0%, 100% { transform: translate(0, 0); }
-          50% { transform: translate(20px, 20px); }
-        }
-        .animate-float {
-          animation: float 10s ease-in-out infinite;
-        }
-        @keyframes scroll-down {
-            0% { top: -100%; }
-            100% { top: 100%; }
-        }
-        .animate-scroll-down {
-            animation: scroll-down 2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
-        }
-      `}</style>
-    </section>
+        <style jsx>{`
+          @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, 20px); }
+          }
+          .animate-float { animation: float 10s ease-in-out infinite; }
+        `}</style>
+      </section>
+    </>
   )
 }
