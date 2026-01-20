@@ -354,12 +354,12 @@ export function Footer() {
             </h2>
             
             <div className="group w-fit relative">
-              <a href="mailto:hello@sparkpair.com" className="text-lg sm:text-xl md:text-2xl font-medium relative overflow-hidden inline-block">
+              <a href="mailto:hello@sparkpair.dev" className="text-lg sm:text-xl md:text-2xl font-medium relative overflow-hidden inline-block">
                 <motion.span className="inline-block transition-transform duration-500 cubic-bezier(0.76, 0, 0.24, 1) group-hover:-translate-y-[120%]">
-                  hello@sparkpair.com
+                  hello@sparkpair.dev
                 </motion.span>
                 <span className="absolute top-full left-0 inline-block transition-transform duration-500 cubic-bezier(0.76, 0, 0.24, 1) group-hover:-translate-y-[100%] text-accent italic font-serif">
-                  hello@sparkpair.com
+                  hello@sparkpair.dev
                 </span>
               </a>
               <div className="h-[1px] bg-border w-full group-hover:bg-accent transition-colors duration-500" />

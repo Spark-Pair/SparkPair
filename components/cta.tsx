@@ -338,10 +338,10 @@ export function CTA() {
   >
     <span>or email directly at</span>
     <a
-      href="mailto:hello@sparkpair.com"
+      href="mailto:hello@sparkpair.dev"
       className="relative text-background/70 hover:text-accent transition-colors duration-300 group/link"
     >
-      hello@sparkpair.com
+      hello@sparkpair.dev
       <span className="absolute left-0 -bottom-px w-0 h-px bg-accent group-hover/link:w-full transition-all duration-300" />
     </a>
   </motion.div>
