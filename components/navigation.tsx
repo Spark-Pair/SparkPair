@@ -33,7 +33,7 @@ export function Navigation({ show }: { show: boolean }) { // Accept show prop fr
         <motion.nav
           initial={{ y: -100, opacity: 0, scale: 0.9 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 1.2, ease: [0.215, 0.61, 0.355, 1] }}
+          transition={{ delay: 0.7, duration: 1.2, ease: [0.225, 1.3, 0.385, 1.2] }}
           className={`fixed top-0 z-50 w-full transition-all duration-300 ${
             isScrolled 
               ? "bg-background/90 backdrop-blur-lg border-b border-border/60 shadow-lg shadow-background/5" 
@@ -64,12 +64,29 @@ export function Navigation({ show }: { show: boolean }) { // Accept show prop fr
               </div>
 
               <div className="hidden md:block">
-                <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }}>
-                  <Button size="sm" className="font-medium tracking-wide rounded-full px-5 h-9 bg-accent hover:bg-accent/90 text-accent-foreground group shadow-md shadow-accent/10 transition-all duration-300">
-                    Let's Talk
-                    <ArrowUpRight className="w-4 h-4 ml-1 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Button>
-                </motion.div>
+                <Button
+                  size="sm"
+                  className="px-6 h-10 rounded-full text-base font-medium bg-accent text-accent-foreground shadow-md shadow-accent/15 hover:shadow-lg hover:shadow-accent/25 transition-all duration-500 group cursor-pointer overflow-hidden relative"
+                >
+                  <motion.a 
+                    href="#contact"
+                  >
+                    {/* Subtle dark overlay sweep */}
+                    <span className="absolute inset-0 bg-black/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
+                    
+                    {/* Text with slide effect */}
+                    <span className="relative z-10 flex items-center h-4 overflow-hidden">
+                      <span className="flex items-center">
+                        Let's Talk
+                        {/* Arrow with diagonal swap */}
+                        <span className="relative w-4 h-4 ml-2 overflow-hidden">
+                          <ArrowUpRight className="w-4 h-4 absolute inset-0 transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-5 group-hover:-translate-y-5" />
+                          <ArrowUpRight className="w-4 h-4 absolute inset-0 -translate-x-5 translate-y-5 transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-0 group-hover:translate-y-0" />
+                        </span>
+                      </span>
+                    </span>
+                  </motion.a>
+                </Button>
               </div>
 
               <button onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2 rounded-lg z-[60]">

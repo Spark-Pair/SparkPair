@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Code2, Headphones, ShoppingCart, Layers, Cpu, Settings, ArrowUpRight } from "lucide-react";
 import { SectionWatermark } from "./section-watermark";
 import { SectionHeader } from "./section-header";
+import { Viewport } from "@radix-ui/react-toast";
+import { once } from "events";
 
 export function Services() {
   const services = [
@@ -30,9 +32,9 @@ export function Services() {
     hidden: { 
       opacity: 0, 
       filter: "blur(15px)", 
-      y: 30, 
+      y: 15, 
       skewX: -20, // Skew thoda kam kiya taake natural lage
-      scale: 0.95 
+      scale: 0.80 
     },
     show: { 
       opacity: 1, 
@@ -41,7 +43,7 @@ export function Services() {
       skewX: 0, 
       scale: 1,
       transition: { 
-        duration: 1.2, 
+        duration: 1.5, 
         ease: [0.19, 1, 0.22, 1] 
       }
     }

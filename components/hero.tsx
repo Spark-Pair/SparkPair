@@ -212,7 +212,16 @@ export function Hero() {
           <div className="flex flex-col items-center text-center space-y-10">
             
             {/* Badge Reveal */}
-            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/40 bg-background/50 backdrop-blur-sm shadow-sm hover:border-accent/50 transition-colors duration-300 cursor-default">
+            <motion.div
+              initial={{ opacity: 0, filter: "blur(7px)", y: -20, skewX: 60, scale: 0.9 }}
+              animate={!loading ? { opacity: 1, filter: "blur(0px)", y: 0, skewX: 0, scale: 1 } : {}}
+              transition={{ 
+                duration: 1.6, 
+                delay: 0.8, 
+                ease: [0.22, 1.1, 0.28, 1.2] 
+              }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/40 bg-background/50 backdrop-blur-sm shadow-sm hover:border-accent/50 transition-colors duration-300 cursor-default"
+            >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
@@ -221,7 +230,7 @@ export function Hero() {
             </motion.div>
 
             {/* Headline with Mask Effect (Keeping your original UI/Tags) */}
-            <motion.div variants={itemVariants} className="space-y-6">
+            <motion.div className="space-y-6">
               <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-foreground leading-[1.1] sm:leading-[0.95] tracking-tight text-balance">
                 
                 {/* Line 1: Digital Solutions - Atmospheric Reveal */}
@@ -324,26 +333,60 @@ export function Hero() {
               }}
               className="flex flex-col sm:flex-row gap-4 pt-2 w-full justify-center"
             >
+              {/* Primary CTA */}
               <Button
                 size="lg"
                 asChild
-                className="h-14 px-8 rounded-full text-base font-medium bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all duration-300 group cursor-pointer"
+                className="h-14 px-8 rounded-full text-base font-medium bg-accent text-accent-foreground shadow-md shadow-accent/15 hover:shadow-lg hover:shadow-accent/25 transition-all duration-500 group cursor-pointer overflow-hidden relative"
               >
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center">
-                  Start a project
-                  <ArrowUpRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </motion.div>
+                <motion.a 
+                  href="#contact"
+                >
+                  {/* Subtle dark overlay sweep */}
+                  <span className="absolute inset-0 bg-black/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
+                  
+                  {/* Text with slide effect */}
+                  <span className="relative z-10 flex items-center h-5 overflow-hidden">
+                    <span className="flex items-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]">
+                      Start a project
+                      
+                      {/* Arrow with diagonal swap */}
+                      <span className="relative w-4 h-4 ml-2 overflow-hidden">
+                        <ArrowUpRight className="w-4 h-4 absolute inset-0 transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-5 group-hover:-translate-y-5" />
+                        <ArrowUpRight className="w-4 h-4 absolute inset-0 -translate-x-5 translate-y-5 transition-transform duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-x-0 group-hover:translate-y-0" />
+                      </span>
+                    </span>
+                  </span>
+                </motion.a>
               </Button>
+
+              {/* Secondary CTA */}
               <Button
                 size="lg"
                 variant="outline"
                 asChild
-                className="h-14 px-8 rounded-full text-base bg-background/50 backdrop-blur-sm border-border hover:bg-secondary/50 hover:text-foreground transition-all duration-300 cursor-pointer"
+                className="h-14 px-8 rounded-full text-base bg-background/50 backdrop-blur-sm border-border/60 hover:border-foreground/20 transition-all duration-500 cursor-pointer overflow-hidden relative group"
               >
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center">
-                  <Play className="w-3.5 h-3.5 mr-2 fill-current" />
-                  Watch showreel
-                </motion.div>
+                <motion.a 
+                  href="#showreel"
+                  whileHover={{ y: -2 }} 
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {/* Fill sweep from left */}
+                  <span className="absolute inset-0 bg-foreground scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
+                  
+                  {/* Content */}
+                  <span className="relative z-10 flex items-center group-hover:text-background transition-colors duration-300 delay-100">
+                    {/* Play icon with pulse */}
+                    <span className="relative mr-2">
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span className="absolute inset-0 animate-ping opacity-30">
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                      </span>
+                    </span>
+                    Watch showreel
+                  </span>
+                </motion.a>
               </Button>
             </motion.div>
 

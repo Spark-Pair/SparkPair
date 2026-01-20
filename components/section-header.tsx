@@ -15,7 +15,7 @@ export function SectionHeader({ label, title, italicTitle, description }: Sectio
       <motion.div
         initial={{ opacity: 0, filter: "blur(20px)", y: 40 }}
         whileInView={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, margin: "-230px" }}
         transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
         className="max-w-3xl"
       >
@@ -31,10 +31,10 @@ export function SectionHeader({ label, title, italicTitle, description }: Sectio
       </motion.div>
 
       <motion.p
-        initial={{ opacity: 0, x: 30 }}
+        initial={{ opacity: 0, x: 50 }}
         whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true, margin: "-200px" }}
+        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
         className="text-gray-500 max-w-sm text-md font-light leading-relaxed border-l border-gray-300 pl-6 py-2"
       >
         {description}

@@ -8,7 +8,7 @@ import { SectionWatermark } from "./section-watermark";
 export function Team() {
   const team = [
     { id: "01", name: "Hasan Raza", role: "Co-Founder & Creative Lead", image: "/hasan.png" },
-    { id: "02", name: "Muhammad Hassan Raza", role: "Co-Founder & Technical Lead", image: "/hasan.png" },
+    { id: "02", name: "Muhammad Hassan", role: "Co-Founder & Technical Lead", image: "/hasan.png" },
   ];  
 
   return (
@@ -29,10 +29,10 @@ export function Team() {
           {team.map((member, index) => (
             <motion.div 
               key={member.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: -50, filter: "blur(15px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: true, margin: "-300px" }}
+              transition={{ delay: index * 0.1, duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
               className={`relative group ${index % 2 === 1 ? "lg:mt-32" : ""}`}
             >
               {/* Image Frame - Ab ye bilkul stable hai */}
