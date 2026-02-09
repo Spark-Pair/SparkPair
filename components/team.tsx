@@ -1,8 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-import { X, Linkedin, Twitter, Mail, User2, User, UserRound } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { X, Linkedin, Twitter, Github, Mail, ArrowUpRight } from "lucide-react";
 import { SectionHeader } from "./section-header";
 import { SectionWatermark } from "./section-watermark";
 
@@ -20,6 +20,7 @@ interface TeamMember {
   socials?: {
     linkedin?: string;
     twitter?: string;
+    github?: string;
     email?: string;
   };
 }
@@ -28,6 +29,64 @@ export function Team() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   const [scrolled, setScrolled] = useState(false);
+
+  const useSmoothCursor = () => {
+    const cursorRef = useRef(null);
+    const animationRef = useRef(null);
+    const targetPos = useRef({ x: 0, y: 0 });
+    const currentPos = useRef({ x: 0, y: 0 });
+    const isHovering = useRef(false);
+
+    const animate = () => {
+      const dx = targetPos.current.x - currentPos.current.x;
+      const dy = targetPos.current.y - currentPos.current.y;
+      
+      currentPos.current.x += dx * 0.15;
+      currentPos.current.y += dy * 0.15;
+
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${currentPos.current.x}px`;
+        cursorRef.current.style.top = `${currentPos.current.y}px`;
+      }
+
+      // Continue animation until cursor reaches target
+      if (isHovering.current || Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        animationRef.current = null;
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      targetPos.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+      isHovering.current = true;
+
+      if (!animationRef.current) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    const handleMouseLeave = (e) => {
+      isHovering.current = false;
+      const rect = e.currentTarget.getBoundingClientRect();
+      // Set target position to exit point
+      targetPos.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+      
+      // Continue animation to reach exit point
+      if (!animationRef.current) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    return { cursorRef, handleMouseMove, handleMouseLeave };
+  };
 
   // Lock Lenis scroll when modal is open
   useEffect(() => {
@@ -54,30 +113,35 @@ export function Team() {
     {
       id: "01",
       name: "Hasan Raza",
-      role: "Co-Founder & Creative Lead",
+      role: "Co-Founder & Lead Software Engineer",
       image: "/hasan.png",
       bio: {
-        intro: "A visionary creative strategist with over 8 years of experience in brand identity and digital design. Hasan believes that great design isn't just about aesthetics—it's about solving real problems and creating emotional connections that resonate with people.",
+        intro: "A full-stack software engineer and product-focused developer with 7+ years of hands-on experience in building scalable web, mobile, and desktop applications. Hasan focuses on turning complex business requirements into clean, efficient, and reliable digital solutions that actually get used in the real world.",
+        
         expertise: [
-          "Brand Strategy & Identity Design",
-          "UI/UX Design & Product Thinking",
-          "Creative Direction & Art Direction",
-          "Design Systems & Visual Language",
-          "Motion Design & Animation"
+          "Full-Stack Web & Mobile Development",
+          "Laravel & PHP Application Development",
+          "React & Next.js Frontend Engineering",
+          "Flutter & Android App Development",
+          "Custom ERP, POS & CRM Solutions",
+          "Hardware & Device System Integrations"
         ],
+
         achievements: [
-          "Led creative campaigns for 50+ international brands across tech, fashion, and lifestyle",
-          "Won multiple design awards including Red Dot, Awwwards, and CSS Design Awards",
-          "Featured speaker at design conferences across Europe and Asia",
-          "Mentored 100+ designers through workshops and programs",
-          "Built design systems used by teams of 50+ designers"
+          "Built and delivered multiple production-ready business systems for garments, retail, manufacturing, and service-based companies",
+          "Developed custom ERP, POS, HRM, CRM, and shop management solutions tailored to real operational workflows",
+          "Led end-to-end development of web and mobile apps from idea to deployment",
+          "Worked directly with clients to translate business logic into efficient software systems",
+          "Known for building distraction-free, fully customized solutions instead of generic templates"
         ],
-        passion: "When not pushing pixels, Hasan explores architectural photography, studies the intersection of art and technology, and researches how human psychology influences design decisions. He's also an avid traveler who draws inspiration from different cultures and urban landscapes."
+
+        passion: "Hasan enjoys architecting systems that simplify daily operations for businesses. He is deeply interested in clean code, reusable components, and long-term maintainability. Outside of development, he researches modern product workflows, explores automation ideas, and constantly experiments with new tools, frameworks, and AI-assisted development workflows."
       },
+
       socials: {
-        linkedin: "https://linkedin.com/in/hasanraza",
-        twitter: "https://twitter.com/hasanraza",
-        email: "hasan@company.com"
+        linkedin: "https://linkedin.com/in/raza-jp",
+        github: "https://github.com/razajp",
+        email: "hasan@sparkpair.dev"
       }
     },
     {
@@ -106,6 +170,7 @@ export function Team() {
       socials: {
         linkedin: "https://linkedin.com/in/muhammadhassan",
         twitter: "https://twitter.com/muhammadhassan",
+        github: "https://github.com/hasanraza",
         email: "hassan@company.com"
       }
     },
@@ -125,48 +190,59 @@ export function Team() {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-32">
-            {team.map((member, index) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: -50, filter: "blur(15px)" }}
-                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                viewport={{ once: true, margin: "-300px" }}
-                transition={{ delay: index * 0.1, duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                className={`relative group ${index % 2 === 1 ? "lg:translate-y-32" : ""}`}
-              >
-                <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem]">
-                  <img
-                    src={member.image || "/placeholder.svg"}
-                    alt={member.name}
-                    className="w-full h-full object-cover grayscale transition-all duration-[0.9s] group-hover:grayscale-0 group-hover:scale-105"
-                  />
+            {team.map((member, index) => {
+              const { cursorRef, handleMouseMove, handleMouseLeave } = useSmoothCursor();
 
-                  <div className="absolute top-8 left-8 z-20">
-                    <span className="text-white text-md font-mono opacity-50 tracking-widest">
-                      {member.id}
-                    </span>
-                  </div>
-
-                  <button
+              return (
+                <motion.div
+                  key={member.name}
+                  initial={{ opacity: 0, y: -50, filter: "blur(15px)" }}
+                  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  viewport={{ once: true, margin: "-300px" }}
+                  transition={{ delay: index * 0.1, duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                  className={`relative group ${index % 2 === 1 ? "lg:translate-y-32" : ""}`}
+                >
+                  <div 
                     onClick={() => setSelectedMember(member)}
-                    className="absolute bottom-10 right-10 h-16 w-16 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-xl z-20 text-black cursor-pointer hover:scale-110 active:scale-95"
-                    aria-label={`View ${member.name}'s bio`}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                    className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] cursor-none"
                   >
-                    <span className="text-[10px] font-black uppercase tracking-tighter">Bio</span>
-                  </button>
-                </div>
+                    <img
+                      src={member.image || "/placeholder.svg"}
+                      alt={member.name}
+                      className="w-full h-full object-cover grayscale transition-all duration-[0.9s] group-hover:grayscale-0 group-hover:scale-105"
+                    />
 
-                <div className="mt-7 flex items-center justify-between px-4 group-hover:px-6 transition-all duration-500">
-                  <div className="space-y-1">
-                    <h3 className="text-3xl font-bold text-black tracking-tighter">{member.name}</h3>
-                    <p className="text-accent text-xs font-bold uppercase tracking-[0.2em]">
-                      {member.role}
-                    </p>
+                    <div className="absolute top-8 left-8 z-20 pointer-events-none">
+                      <span className="text-white text-md font-mono opacity-50 tracking-widest">
+                        {member.id}
+                      </span>
+                    </div>
+
+                    {/* Animated smooth cursor */}
+                    <div 
+                      ref={cursorRef}
+                      className="absolute w-28 h-12 bg-white rounded-full flex items-center justify-center gap-1 scale-0 group-hover:scale-100 pointer-events-none z-30 -translate-x-1/2 -translate-y-1/2 shadow-2xl transition-transform duration-200"
+                    >
+                      <span className="text-sm font-semibold uppercase text-black flex items-center gap-1">
+                        BIO <ArrowUpRight className="w-4 h-4"/>
+                      </span>
+                    </div>
                   </div>
-                  <div className="h-[1px] w-12 bg-gray-300 group-hover:bg-accent group-hover:w-16 transition-all duration-500" />
-                </div>
-              </motion.div>
-            ))}
+
+                  <div className="mt-7 flex items-center justify-between px-4 group-hover:px-6 transition-all duration-500">
+                    <div className="space-y-1">
+                      <h3 className="text-3xl font-bold text-black tracking-tighter">{member.name}</h3>
+                      <p className="text-accent text-xs font-bold uppercase tracking-[0.2em]">
+                        {member.role}
+                      </p>
+                    </div>
+                    <div className="h-[1px] w-12 bg-gray-300 group-hover:bg-accent group-hover:w-16 transition-all duration-500" />
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -271,7 +347,7 @@ export function Team() {
                     {selectedMember.socials && (
                       <div className="flex gap-3.5 mt-6">
                         {Object.entries(selectedMember.socials).map(([platform, url]) => {
-                          const Icon = platform === 'linkedin' ? Linkedin : platform === 'twitter' ? Twitter : Mail;
+                          const Icon = platform === 'linkedin' ? Linkedin : platform === 'twitter' ? Twitter : platform === 'github' ? Github : Mail;
                           return (
                             <a
                               key={platform}
