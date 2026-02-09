@@ -169,7 +169,6 @@ export function Team() {
       },
       socials: {
         linkedin: "https://linkedin.com/in/muhammadhassan",
-        twitter: "https://twitter.com/muhammadhassan",
         github: "https://github.com/hasanraza",
         email: "hassan@company.com"
       }
