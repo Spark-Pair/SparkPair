@@ -42,11 +42,11 @@ export function Navigation({ show }: { show: boolean }) { // Accept show prop fr
         >
           <div className="max-w-6xl mx-auto px-6 lg:px-8">
             <div className={`flex justify-between items-center transition-all duration-300 ${isScrolled ? "h-16" : "h-20"}`}>
-              <a href="#" className="flex items-center group transition-transform duration-300">
+              <a href="#" className="flex items-center">
                 <img
                   src="/images/spark-pair6.png"
                   alt="SparkPair Logo"
-                  className={`w-auto transition-all duration-300 ${isScrolled ? "h-8" : "h-10"} group-hover:opacity-80`}
+                  className={`w-auto transition-all duration-300 ${isScrolled ? "h-8" : "h-10"}`}
                 />
               </a>
 
