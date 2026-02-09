@@ -27,6 +27,8 @@ interface TeamMember {
 export function Team() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
+  const [scrolled, setScrolled] = useState(false);
+
   // Lock Lenis scroll when modal is open
   useEffect(() => {
     if (selectedMember) {
@@ -176,7 +178,7 @@ export function Team() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+            className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto"
             data-lenis-prevent
           >
             {/* Backdrop */}
@@ -204,9 +206,19 @@ export function Team() {
               </button>
 
               {/* Scrollable Content */}
-              <div className="max-h-[calc(100vh-4rem)] overflow-y-auto p-0.5">
+              <div
+                className="max-h-[calc(100vh-4rem)] overflow-y-auto p-0.5"
+                onScroll={(e) => {
+                  const target = e.target as HTMLElement
+                  if (target.scrollTop > 0) {
+                    setScrolled(true);
+                  } else {
+                    setScrolled(false);
+                  }
+                }}
+              >
                 {/* Header Section */}
-                <div className="relative h-85 overflow-hidden rounded-3xl bg-foreground text-background group">
+                <div className={`${scrolled ? "h-65" : "h-85"} overflow-hidden rounded-3xl bg-foreground text-background group sticky top-0 transition-all duration-300`}>
                   {/* Subtle grid pattern background */}
                   <div className="absolute inset-0 opacity-[0.03]">
                     <div 
@@ -290,7 +302,7 @@ export function Team() {
                     </p>
                   </div>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
                   {/* Expertise */}
                   <div>
@@ -316,7 +328,7 @@ export function Team() {
                     </div>
                   </div>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
                   {/* Achievements */}
                   <div>
@@ -342,10 +354,10 @@ export function Team() {
                     </div>
                   </div>
 
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
                   {/* Passion */}
-                  <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100">
+                  <div className="bg-gray-100/75 rounded-2xl p-8 border border-gray-200">
                     <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-4 flex items-center gap-3">
                       <span className="h-px w-8 bg-accent" />
                       Beyond Work
