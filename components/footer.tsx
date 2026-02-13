@@ -372,7 +372,7 @@ export function Footer() {
               <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-muted-foreground/40">Navigation</p>
               <ul className="space-y-2.5">
                 {["Work", "Services", "About", "Contact"].map((item) => (
-                  <li key={item} className="overflow-hidden h-4">
+                  <li key={item} className="overflow-hidden h-3.5">
                     <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-all duration-300 flex flex-col group leading-none">
                       <span className="transition-transform duration-300 group-hover:-translate-y-full">{item}</span>
                       <span className="transition-transform duration-300 group-hover:-translate-y-full text-accent font-medium">{item}</span>
