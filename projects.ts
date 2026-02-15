@@ -1,21 +1,5 @@
 export const projects = [
   {
-    id: "01",
-    title: "SparkPair",
-    caseStudyDetail: "Corporate site for SparkPair, showcasing projects, services, and company profile.",
-    description: "The official website of SparkPair, highlighting portfolio, company information, and client engagement.",
-    technologies: ["Next.js", "TailwindCSS", "React"],
-    deliverables: ["Portfolio Showcase", "Company Profile", "Interactive UI/UX Design", "Responsive Web Design"],
-    screenshots: [
-      { id: "s01", title: "Projects", url: "/images/sparkpair/screenshot_1.webp" },
-      { id: "s02", title: "Bio", url: "/images/sparkpair/screenshot_2.webp" },
-      { id: "s03", title: "Footer", url: "/images/sparkpair/screenshot_3.webp" },
-    ],
-    video: "",
-    image: "/images/sparkpair/sparkpair.webp",
-    link: "https://www.sparkpair.dev/"
-  },
-  {
     id: "02",
     title: "GarmentsOS PRO",
     caseStudyDetail: "A full-featured ERP for garment factories, streamlining production, inventory, billing, and workforce management with real-time insights.",

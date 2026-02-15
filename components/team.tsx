@@ -1,16 +1,18 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
-import { X, Linkedin, Twitter, Github, Mail, ArrowUpRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Linkedin, Twitter, Github, Mail, ArrowUpRight, Phone } from "lucide-react";
 import { SectionHeader } from "./section-header";
 import { SectionWatermark } from "./section-watermark";
+import { SmoothCursor } from "./smooth-cursor";
 
 interface TeamMember {
   id: string;
   name: string;
   role: string;
   image: string;
+  portfolioURL: string;
   bio: {
     intro: string;
     expertise: string[];
@@ -27,76 +29,15 @@ interface TeamMember {
 
 export function Team() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
-
   const [scrolled, setScrolled] = useState(false);
-
-  const useSmoothCursor = () => {
-    const cursorRef = useRef(null);
-    const animationRef = useRef(null);
-    const targetPos = useRef({ x: 0, y: 0 });
-    const currentPos = useRef({ x: 0, y: 0 });
-    const isHovering = useRef(false);
-
-    const animate = () => {
-      const dx = targetPos.current.x - currentPos.current.x;
-      const dy = targetPos.current.y - currentPos.current.y;
-      
-      currentPos.current.x += dx * 0.15;
-      currentPos.current.y += dy * 0.15;
-
-      if (cursorRef.current) {
-        cursorRef.current.style.left = `${currentPos.current.x}px`;
-        cursorRef.current.style.top = `${currentPos.current.y}px`;
-      }
-
-      // Continue animation until cursor reaches target
-      if (isHovering.current || Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-        animationRef.current = requestAnimationFrame(animate);
-      } else {
-        animationRef.current = null;
-      }
-    };
-
-    const handleMouseMove = (e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      targetPos.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      };
-      isHovering.current = true;
-
-      if (!animationRef.current) {
-        animationRef.current = requestAnimationFrame(animate);
-      }
-    };
-
-    const handleMouseLeave = (e) => {
-      isHovering.current = false;
-      const rect = e.currentTarget.getBoundingClientRect();
-      // Set target position to exit point
-      targetPos.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      };
-      
-      // Continue animation to reach exit point
-      if (!animationRef.current) {
-        animationRef.current = requestAnimationFrame(animate);
-      }
-    };
-
-    return { cursorRef, handleMouseMove, handleMouseLeave };
-  };
 
   // Lock Lenis scroll when modal is open
   useEffect(() => {
     if (selectedMember) {
-      // Stop Lenis smooth scroll
       document.documentElement.classList.add('modal-open');
       document.body.style.overflow = "hidden";
       document.body.style.touchAction = "none";
     } else {
-      // Resume Lenis smooth scroll
       document.documentElement.classList.remove('modal-open');
       document.body.style.overflow = "";
       document.body.style.touchAction = "";
@@ -115,6 +56,7 @@ export function Team() {
       name: "Hasan Raza",
       role: "Co-Founder & Lead Software Engineer",
       image: "/hasan.png",
+      portfolioURL: "https://hasan.sparkpair.dev",
       bio: {
         intro: "A full-stack software engineer and product-focused developer with 7+ years of hands-on experience in building scalable web, mobile, and desktop applications. Hasan focuses on turning complex business requirements into clean, efficient, and reliable digital solutions that actually get used in the real world.",
         
@@ -149,6 +91,7 @@ export function Team() {
       name: "Muhammad Hassan",
       role: "Co-Founder & Technical Lead",
       image: "/hasan.png",
+      portfolioURL: "https://hassan.sparkpair.dev",
       bio: {
         intro: "A pragmatic engineer and system architect who transforms complex business requirements into scalable, maintainable solutions. Hassan's philosophy: write code that your future self will thank you for, and build systems that can evolve with your business.",
         expertise: [
@@ -189,23 +132,19 @@ export function Team() {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 lg:gap-32">
-            {team.map((member, index) => {
-              const { cursorRef, handleMouseMove, handleMouseLeave } = useSmoothCursor();
-
-              return (
-                <motion.div
-                  key={member.name}
-                  initial={{ opacity: 0, y: -50, filter: "blur(15px)" }}
-                  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  viewport={{ once: true, margin: "-300px" }}
-                  transition={{ delay: index * 0.1, duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                  className={`relative group ${index % 2 === 1 ? "lg:translate-y-32" : ""}`}
-                >
+            {team.map((member, index) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: -50, filter: "blur(15px)" }}
+                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                viewport={{ once: true, margin: "-300px" }}
+                transition={{ delay: index * 0.1, duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                className={`relative ${index % 2 === 1 ? "lg:translate-y-32" : ""}`}
+              >
+                <SmoothCursor text="BIO" icon={<ArrowUpRight className="w-4 h-4"/>}>
                   <div 
                     onClick={() => setSelectedMember(member)}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                    className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] cursor-none"
+                    className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem]"
                   >
                     <img
                       src={member.image || "/placeholder.svg"}
@@ -218,30 +157,20 @@ export function Team() {
                         {member.id}
                       </span>
                     </div>
-
-                    {/* Animated smooth cursor */}
-                    <div 
-                      ref={cursorRef}
-                      className="absolute w-28 h-12 bg-white rounded-full flex items-center justify-center gap-1 scale-0 group-hover:scale-100 pointer-events-none z-30 -translate-x-1/2 -translate-y-1/2 shadow-2xl transition-transform duration-200"
-                    >
-                      <span className="text-sm font-semibold uppercase text-black flex items-center gap-1">
-                        BIO <ArrowUpRight className="w-4 h-4"/>
-                      </span>
-                    </div>
                   </div>
+                </SmoothCursor>
 
-                  <div className="mt-7 flex items-center justify-between px-4 group-hover:px-6 transition-all duration-500">
-                    <div className="space-y-1">
-                      <h3 className="text-3xl font-bold text-black tracking-tighter">{member.name}</h3>
-                      <p className="text-accent text-xs font-bold uppercase tracking-[0.2em]">
-                        {member.role}
-                      </p>
-                    </div>
-                    <div className="h-[1px] w-12 bg-gray-300 group-hover:bg-accent group-hover:w-16 transition-all duration-500" />
+                <div className="mt-7 flex items-center justify-between px-4 group-hover:px-6 transition-all duration-500">
+                  <div className="space-y-1">
+                    <h3 className="text-3xl font-bold text-black tracking-tighter">{member.name}</h3>
+                    <p className="text-accent text-xs font-bold uppercase tracking-[0.2em]">
+                      {member.role}
+                    </p>
                   </div>
-                </motion.div>
-              );
-            })}
+                  <div className="h-[1px] w-12 bg-gray-300 group-hover:bg-accent group-hover:w-16 transition-all duration-500" />
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -318,8 +247,26 @@ export function Team() {
                     />
                   </div>
 
+                  {/* --- Portfolio URL --- */}
+                  <div className="absolute bottom-5 right-5">
+                    <a 
+                      href={selectedMember.portfolioURL} 
+                      target="_blank"
+                      className="group flex items-center gap-3 py-2.5 px-4 rounded-xl bg-background/10 border border-background/7 hover:border-accent/30 hover:bg-background/15 transition-all duration-300 cursor-pointer"
+                    >
+                      Portfolio
+                      {/* <div className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors duration-300">
+                        <Phone className="w-3.5 h-3.5 text-background/50 group-hover:text-accent transition-colors duration-300" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] uppercase tracking-wider text-background/30">Portfolio</span>
+                        <span className="text-xs font-medium text-background/70 group-hover:text-background transition-colors duration-300">{selectedMember.portfolioURL}</span>
+                      </div> */}
+                    </a>
+                  </div>
+
                   {/* Contenido Principal */}
-                  <div className="absolute bottom-8 left-8 right-8 z-10">
+                  <div className="absolute bottom-8 left-8 right-8 z-10 w-100">
                     <span className="text-white/40 text-xs font-mono tracking-[0.4em] block mb-3 uppercase">
                       Member // {selectedMember.id}
                     </span>
