@@ -4,9 +4,6 @@ import { motion } from "framer-motion";
 import { Code2, Headphones, ShoppingCart, Layers, Cpu, Settings, ArrowUpRight } from "lucide-react";
 import { SectionWatermark } from "./section-watermark";
 import { SectionHeader } from "./section-header";
-import { Viewport } from "@radix-ui/react-toast";
-import { once } from "events";
-
 export function Services() {
   const services = [
     { icon: Code2, title: "Web & Mobile Apps", description: "Lightning-fast apps and websites, built for performance, simplicity, and seamless user experience.", number: "01" },
@@ -44,7 +41,7 @@ export function Services() {
       scale: 1,
       transition: { 
         duration: 1.5, 
-        ease: [0.19, 1, 0.22, 1] 
+        ease: [0.19, 1, 0.22, 1] as const
       }
     }
   };

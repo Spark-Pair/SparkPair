@@ -3,15 +3,18 @@
 import { useRef, useState, useEffect } from "react"
 import { ArrowUpRight, X, Play, ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 import Lenis from "lenis"
 import { SectionHeader } from "./section-header";
 import { SectionWatermark } from "./section-watermark";
-import { projects } from "../projects"
+import { SmoothCursor } from "./smooth-cursor";
+import { Button } from "./ui/button";
+import { projects, type Project } from "../projects"
 
 export function Projects() {
   const containerRef = useRef(null)
-  const [selectedProject, setSelectedProject] = useState(null)
-  const [videoProject, setVideoProject] = useState(null)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [videoProject, setVideoProject] = useState<Project | null>(null)
 
   return (
     <>
@@ -63,12 +66,19 @@ export function Projects() {
   )
 }
 
-import { SmoothCursor } from "./smooth-cursor";
-import { Button } from "./ui/button";
-
-// ... (rest of imports)
-
-function ProjectCard({ project, index, total, onOpenCaseStudy, onOpenVideo }) {
+function ProjectCard({
+  project,
+  index,
+  total,
+  onOpenCaseStudy,
+  onOpenVideo,
+}: {
+  project: Project
+  index: number
+  total: number
+  onOpenCaseStudy: () => void
+  onOpenVideo: () => void
+}) {
   const cardRef = useRef(null)
   
   const { scrollYProgress } = useScroll({
@@ -159,9 +169,11 @@ function ProjectCard({ project, index, total, onOpenCaseStudy, onOpenVideo }) {
                   style={{ y: yImage }} 
                   className="absolute inset-0 scale-110"
                 >
-                  <img
+                  <Image
                     src={project.image}
                     alt={project.title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 1200px"
                     className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105"
                   />
                 </motion.div>
@@ -311,7 +323,15 @@ function ProjectCard({ project, index, total, onOpenCaseStudy, onOpenVideo }) {
   )
 }
 
-function CaseStudyModal({ project, onClose, onOpenVideo }) {
+function CaseStudyModal({
+  project,
+  onClose,
+  onOpenVideo,
+}: {
+  project: Project
+  onClose: () => void
+  onOpenVideo: () => void
+}) {
   const modalContentRef = useRef<HTMLDivElement>(null)
   const modalLenisRef = useRef<Lenis | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -465,7 +485,7 @@ function CaseStudyModal({ project, onClose, onOpenVideo }) {
               >
                 <h3 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight">Technology Stack</h3>
                 <div className="flex flex-wrap gap-3">
-                  {project.technologies.map((tech, idx) => (
+                  {project.technologies.map((tech: string, idx: number) => (
                     <motion.span
                       key={idx}
                       initial={{ scale: 0, rotate: -10 }}
@@ -486,7 +506,7 @@ function CaseStudyModal({ project, onClose, onOpenVideo }) {
               >
                 <h3 className="text-3xl font-bold text-gray-900 mb-6 tracking-tight">Key Deliverables</h3>
                 <ul className="space-y-3">
-                  {project.deliverables.map((item, idx) => (
+                  {project.deliverables.map((item: string, idx: number) => (
                     <motion.li
                       key={idx}
                       initial={{ x: 30, opacity: 0 }}
@@ -557,7 +577,7 @@ function CaseStudyModal({ project, onClose, onOpenVideo }) {
                   {/* Thumbnail Navigation */}
                   {images.length > 1 && (
                     <div className="flex gap-4 mt-6 pb-2">
-                      {images.map((image, idx) => (
+                        {images.map((image: Project["screenshots"][number], idx: number) => (
                         <button
                           key={image.id}
                           onClick={() => setCurrentImageIndex(idx)}
@@ -645,7 +665,13 @@ function CaseStudyModal({ project, onClose, onOpenVideo }) {
   )
 }
 
-function VideoModal({ project, onClose }) {
+function VideoModal({
+  project,
+  onClose,
+}: {
+  project: Project
+  onClose: () => void
+}) {
   return (
     <motion.div
       initial={{ opacity: 0 }}

@@ -4,8 +4,9 @@ import { useState, useEffect } from "react"
 import { Menu, X, ArrowUpRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 
-export function Navigation({ show }: { show: boolean }) { // Accept show prop from Hero/Page
+export function Navigation({ show = true }: { show?: boolean }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -31,9 +32,9 @@ export function Navigation({ show }: { show: boolean }) { // Accept show prop fr
     <AnimatePresence>
       {show && (
         <motion.nav
-          initial={{ y: -100, opacity: 0, scale: 0.9 }}
+          initial={{ y: -100, opacity: 0, scale: 0.94 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
-          transition={{ delay: 0.7, duration: 1.2, ease: [0.225, 1.3, 0.385, 1.2] }}
+          transition={{ delay: 0.15, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className={`fixed top-0 z-50 w-full transition-all duration-300 ${
             isScrolled 
               ? "bg-background/90 backdrop-blur-lg border-b border-border/60 shadow-lg shadow-background/5" 
@@ -43,9 +44,12 @@ export function Navigation({ show }: { show: boolean }) { // Accept show prop fr
           <div className="max-w-6xl mx-auto px-6 lg:px-8">
             <div className={`flex justify-between items-center transition-all duration-300 ${isScrolled ? "h-16" : "h-20"}`}>
               <a href="#" className="flex items-center">
-                <img
+                <Image
                   src="/images/spark-pair6.png"
                   alt="SparkPair Logo"
+                  width={160}
+                  height={48}
+                  priority
                   className={`w-auto transition-all duration-300 ${isScrolled ? "h-8" : "h-10"}`}
                 />
               </a>

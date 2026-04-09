@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { X, Linkedin, Twitter, Github, Mail, ArrowUpRight, Phone } from "lucide-react";
+import Image from "next/image";
 import { SectionHeader } from "./section-header";
 import { SectionWatermark } from "./section-watermark";
 import { SmoothCursor } from "./smooth-cursor";
@@ -55,7 +56,7 @@ export function Team() {
       id: "01",
       name: "Hasan Raza",
       role: "Co-Founder & Lead Software Engineer",
-      image: "/hasan.png",
+      image: "/hasan.webp",
       portfolioURL: "https://hasan.sparkpair.dev",
       bio: {
         intro: "A full-stack software engineer and product-focused developer with 7+ years of hands-on experience in building scalable web, mobile, and desktop applications. Hasan focuses on turning complex business requirements into clean, efficient, and reliable digital solutions that actually get used in the real world.",
@@ -90,7 +91,7 @@ export function Team() {
       id: "02",
       name: "Muhammad Hassan",
       role: "Co-Founder & Technical Lead",
-      image: "/hasan.png",
+      image: "/hasan.webp",
       portfolioURL: "https://hassan.sparkpair.dev",
       bio: {
         intro: "A pragmatic engineer and system architect who transforms complex business requirements into scalable, maintainable solutions. Hassan's philosophy: write code that your future self will thank you for, and build systems that can evolve with your business.",
@@ -146,9 +147,11 @@ export function Team() {
                     onClick={() => setSelectedMember(member)}
                     className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem]"
                   >
-                    <img
+                    <Image
                       src={member.image || "/placeholder.svg"}
                       alt={member.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
                       className="w-full h-full object-cover grayscale transition-all duration-[0.9s] group-hover:grayscale-0 group-hover:scale-105"
                     />
 
@@ -240,9 +243,11 @@ export function Team() {
 
                   {/* --- EL AVATAR FADED / CUT-OFF --- */}
                   <div className="absolute -bottom-37 -right-14 h-100 opacity-14 pointer-events-none">
-                    <img 
+                    <Image 
                       src="/images/spark-pair.png" 
                       alt="Spark Pair Decor" 
+                      width={420}
+                      height={420}
                       className="w-full h-full object-contain brightness-100"
                     />
                   </div>

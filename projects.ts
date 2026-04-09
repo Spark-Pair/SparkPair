@@ -1,4 +1,21 @@
-export const projects = [
+export interface Project {
+  id: string
+  title: string
+  caseStudyDetail: string
+  description: string
+  technologies: string[]
+  deliverables: string[]
+  screenshots: {
+    id: string
+    title: string
+    url: string
+  }[]
+  video: string
+  image: string
+  link: string
+}
+
+export const projects: Project[] = [
   {
     id: "02",
     title: "GarmentsOS PRO",

@@ -174,7 +174,6 @@ function FloatingSpark({ initialX, initialY }: { initialX: number; initialY: num
       const relX = e.clientX - rect.left
       const relY = e.clientY - rect.top
       
-      // Subtle parallax - moves slightly towards cursor
       x.set(initialX + (relX - rect.width / 2) * 0.02)
       y.set(initialY + (relY - rect.height / 2) * 0.02)
     }
@@ -337,7 +336,7 @@ export function Footer() {
     initial: { y: 20, opacity: 0 },
     whileInView: { y: 0, opacity: 1 },
     viewport: { once: true },
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as const }
   }
 
   return (

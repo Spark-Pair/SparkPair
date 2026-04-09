@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { SmoothScroll } from "@/components/smooth-scroll"
@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sparkpair.dev"),
+  applicationName: "SparkPair",
 
   title: {
     default: "SparkPair – Custom Software & Digital Solutions Agency",
@@ -41,11 +42,23 @@ export const metadata: Metadata = {
     "POS system",
     "business automation",
   ],
+  authors: [{ name: "SparkPair", url: "https://sparkpair.dev" }],
+  creator: "SparkPair",
+  publisher: "SparkPair",
+  category: "technology",
+  alternates: {
+    canonical: "/",
+  },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
 
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/apple-icon.png",
+    apple: "/apple-touch-icon.png",
   },
 
   openGraph: {
@@ -56,7 +69,7 @@ export const metadata: Metadata = {
     siteName: "SparkPair",
     images: [
       {
-        url: "/hasan.png",
+        url: "/hasan.webp",
         width: 1200,
         height: 630,
         alt: "SparkPair Software Agency",
@@ -65,13 +78,33 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "SparkPair – Custom Software & Digital Solutions Agency",
+    description:
+      "We build custom web apps, mobile apps, ERP, POS and automation software for growing businesses.",
+    images: ["/hasan.webp"],
+  },
 
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
 
   manifest: "/manifest.json",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0b0b0b",
 }
 
 export default function RootLayout({
