@@ -91,7 +91,7 @@ export function Team() {
       id: "02",
       name: "Muhammad Hassan",
       role: "Co-Founder & Technical Lead",
-      image: "/hassan.webp",
+      image: "/hassan_prof.webp",
       portfolioURL: "https://hassan.sparkpair.dev",
       bio: {
         intro: "A pragmatic engineer and system architect who transforms complex business requirements into scalable, maintainable solutions. Hassan's philosophy: write code that your future self will thank you for, and build systems that can evolve with your business.",
