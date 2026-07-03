@@ -7,6 +7,7 @@ export const productName = "GarmentsOS PRO"
 export type ReleaseChannel = "stable" | "beta" | "dev"
 export type CustomerStatus = "active" | "inactive"
 export type LicenseStatus = "active" | "suspended" | "expired"
+export type DeviceStatus = "pending" | "approved" | "blocked"
 
 export interface Product {
   id: string
@@ -58,9 +59,32 @@ export interface ProductLicense {
   expires_at: string
   grace_days: number
   allowed_channel: ReleaseChannel
+  allowed_devices: number
   install_id: string
+  machine_hash: string
   notes: string
   last_check_at: string
+  created_at: string
+  updated_at: string
+}
+
+export interface LicenseDevice {
+  id: string
+  product_key: string
+  install_id: string
+  machine_hash: string
+  machine_name: string
+  app_version: string
+  ip_address: string
+  user_agent: string
+  status: DeviceStatus
+  customer_id: string
+  license_id: string
+  first_seen_at: string
+  last_seen_at: string
+  approved_at: string
+  blocked_at: string
+  notes: string
   created_at: string
   updated_at: string
 }
@@ -94,6 +118,7 @@ async function collections() {
     releases: db.collection<ProductRelease>("product_releases"),
     licenses: db.collection<ProductLicense>("licenses"),
     checks: db.collection<LicenseCheck>("license_checks"),
+    devices: db.collection<LicenseDevice>("license_devices"),
   }
 }
 
@@ -111,6 +136,11 @@ export async function ensureGarmentsOsProData() {
         c.licenses.createIndex({ license_key_hash: 1 }),
         c.checks.createIndex({ license_id: 1, checked_at: -1 }),
         c.checks.createIndex({ product_key: 1, client_id: 1, checked_at: -1 }),
+        c.devices.createIndex({ product_key: 1, install_id: 1 }, { unique: true }),
+        c.devices.createIndex(
+          { product_key: 1, machine_hash: 1 },
+          { unique: true, partialFilterExpression: { machine_hash: { $gt: "" } } },
+        ),
       ])
 
       const now = nowIso()
@@ -355,7 +385,9 @@ export async function saveLicense(
     license_key_hash: plainKey ? hashLicenseKey(plainKey) : existing?.license_key_hash ?? "",
     license_key_preview: plainKey ? maskLicenseKey(plainKey) : existing?.license_key_preview ?? "GOS-****-****-****-****",
     grace_days: Number(input.grace_days),
+    allowed_devices: Number(input.allowed_devices || 1),
     install_id: input.install_id.trim(),
+    machine_hash: input.machine_hash.trim(),
     last_check_at: existing?.last_check_at ?? "",
     created_at: existing?.created_at ?? now,
     updated_at: now,
@@ -371,58 +403,7 @@ export async function getLicenseChecks(license_id?: string) {
   return (await c.checks.find(license_id ? { license_id } : {}).sort({ checked_at: -1 }).toArray()).map(withoutMongoId)
 }
 
-export async function verifyLicense(input: {
-  product: string
-  client_id: string
-  license_key: string
-  install_id: string
-  app_version: string
-}) {
-  await ensureGarmentsOsProData()
-  const c = await collections()
-  const checkedAt = nowIso()
-
-  const saveCheck = async (check: Omit<LicenseCheck, "id" | "checked_at">) => {
-    const row: LicenseCheck = {
-      ...check,
-      id: `chk-${randomUUID().slice(0, 10)}`,
-      checked_at: checkedAt,
-    }
-    await c.checks.insertOne(row)
-    return row
-  }
-
-  if (input.product !== productKey) {
-    await saveCheck({
-      license_id: "",
-      product_key: input.product,
-      client_id: input.client_id,
-      install_id: input.install_id,
-      app_version: input.app_version,
-      status: "invalid",
-      valid: false,
-      message: "Invalid product.",
-    })
-    return { valid: false, status: "invalid", message: "Invalid product." }
-  }
-
-  const keyHash = hashLicenseKey(input.license_key)
-  const license = await c.licenses.findOne({ product_key: productKey, client_id: input.client_id, license_key_hash: keyHash })
-
-  if (!license) {
-    await saveCheck({
-      license_id: "",
-      product_key: productKey,
-      client_id: input.client_id,
-      install_id: input.install_id,
-      app_version: input.app_version,
-      status: "invalid",
-      valid: false,
-      message: "License key was not found.",
-    })
-    return { valid: false, status: "invalid", message: "License key was not found." }
-  }
-
+function getLicenseEvaluation(license: ProductLicense) {
   let status: "active" | "grace" | "expired" | "suspended" = "active"
   let valid = true
   let message = "License active"
@@ -443,14 +424,309 @@ export async function verifyLicense(input: {
     message = "License is in grace period."
   }
 
+  return { status, valid, message }
+}
+
+export async function getLicenseDevices(status?: DeviceStatus) {
+  await ensureGarmentsOsProData()
+  const c = await collections()
+  const query = status ? { product_key: productKey, status } : { product_key: productKey }
+  return (await c.devices.find(query).sort({ updated_at: -1 }).toArray()).map(withoutMongoId)
+}
+
+export async function getLicenseDevice(id: string) {
+  await ensureGarmentsOsProData()
+  const c = await collections()
+  const device = await c.devices.findOne({ id })
+  return device ? withoutMongoId(device) : null
+}
+
+export async function registerInstall(input: {
+  product: string
+  install_id: string
+  machine_hash: string
+  machine_name: string
+  app_version: string
+  ip_address: string
+  user_agent: string
+}) {
+  await ensureGarmentsOsProData()
+  const c = await collections()
+  const now = nowIso()
+
+  if (input.product !== productKey) {
+    return { registered: false, status: "invalid", message: "Invalid product." }
+  }
+
+  const existing = await c.devices.findOne({ product_key: productKey, install_id: input.install_id })
+  const device: LicenseDevice = {
+    id: existing?.id ?? `dev-${randomUUID().slice(0, 10)}`,
+    product_key: productKey,
+    install_id: input.install_id,
+    machine_hash: input.machine_hash,
+    machine_name: input.machine_name,
+    app_version: input.app_version,
+    ip_address: input.ip_address,
+    user_agent: input.user_agent,
+    status: existing?.status ?? "pending",
+    customer_id: existing?.customer_id ?? "",
+    license_id: existing?.license_id ?? "",
+    first_seen_at: existing?.first_seen_at ?? now,
+    last_seen_at: now,
+    approved_at: existing?.approved_at ?? "",
+    blocked_at: existing?.blocked_at ?? "",
+    notes: existing?.notes ?? "",
+    created_at: existing?.created_at ?? now,
+    updated_at: now,
+  }
+
+  await c.devices.updateOne(
+    { product_key: productKey, install_id: input.install_id },
+    { $set: device },
+    { upsert: true },
+  )
+
+  if (device.status === "approved" && device.license_id) {
+    const license = await c.licenses.findOne({ id: device.license_id })
+    if (license) {
+      const result = getLicenseEvaluation(withoutMongoId(license))
+      return {
+        registered: true,
+        status: device.status,
+        valid: result.valid,
+        license_status: result.status,
+        client_name: license.client_name,
+        expires_at: license.expires_at,
+        grace_days: license.grace_days,
+        message: result.message,
+      }
+    }
+  }
+
+  if (device.status === "blocked") {
+    return { registered: true, status: "blocked", message: "Device is blocked. Please contact SparkPair." }
+  }
+
+  return { registered: true, status: device.status, message: "Install registered. Waiting for approval." }
+}
+
+export async function updateLicenseDevice(
+  id: string,
+  input: {
+    status: DeviceStatus
+    customer_id: string
+    license_id: string
+    notes: string
+  },
+) {
+  await ensureGarmentsOsProData()
+  const c = await collections()
+  const existing = await c.devices.findOne({ id })
+
+  if (!existing) {
+    return null
+  }
+
+  const now = nowIso()
+  const next: LicenseDevice = {
+    ...withoutMongoId(existing),
+    status: input.status,
+    customer_id: input.customer_id,
+    license_id: input.license_id,
+    notes: input.notes,
+    approved_at: input.status === "approved" ? existing.approved_at || now : existing.approved_at,
+    blocked_at: input.status === "blocked" ? now : "",
+    updated_at: now,
+  }
+
+  await c.devices.updateOne({ id }, { $set: next })
+
+  if (input.license_id) {
+    await c.licenses.updateOne(
+      { id: input.license_id },
+      {
+        $set: {
+          install_id: next.install_id,
+          machine_hash: next.machine_hash,
+          updated_at: now,
+        },
+      },
+    )
+  }
+
+  return next
+}
+
+export async function createCustomerAndLicenseForDevice(
+  id: string,
+  input: {
+    customer_name: string
+    customer_email: string
+    expires_at: string
+    grace_days: number
+    allowed_channel: ReleaseChannel
+    notes: string
+  },
+) {
+  const device = await getLicenseDevice(id)
+  if (!device) {
+    return null
+  }
+
+  const customer = await saveCustomer({
+    name: input.customer_name,
+    email: input.customer_email,
+    client_id: device.install_id,
+    status: "active",
+    notes: `Created from install ${device.install_id}.`,
+  })
+
+  const result = await saveLicense({
+    customer_id: customer.id,
+    client_id: customer.client_id,
+    client_name: customer.name,
+    status: "active",
+    expires_at: input.expires_at,
+    grace_days: input.grace_days,
+    allowed_channel: input.allowed_channel,
+    allowed_devices: 1,
+    install_id: device.install_id,
+    machine_hash: device.machine_hash,
+    notes: input.notes,
+  })
+
+  await updateLicenseDevice(device.id, {
+    status: "approved",
+    customer_id: customer.id,
+    license_id: result.license.id,
+    notes: device.notes,
+  })
+
+  return { customer, license: result.license }
+}
+
+export async function verifyLicense(input: {
+  product: string
+  client_id?: string
+  license_key?: string
+  install_id: string
+  machine_hash?: string
+  app_version: string
+}) {
+  await ensureGarmentsOsProData()
+  const c = await collections()
+  const checkedAt = nowIso()
+
+  const saveCheck = async (check: Omit<LicenseCheck, "id" | "checked_at">) => {
+    const row: LicenseCheck = {
+      ...check,
+      id: `chk-${randomUUID().slice(0, 10)}`,
+      checked_at: checkedAt,
+    }
+    await c.checks.insertOne(row)
+    return row
+  }
+
+  if (input.product !== productKey) {
+    await saveCheck({
+      license_id: "",
+      product_key: input.product,
+      client_id: input.client_id ?? "",
+      install_id: input.install_id,
+      app_version: input.app_version,
+      status: "invalid",
+      valid: false,
+      message: "Invalid product.",
+    })
+    return { valid: false, status: "invalid", message: "Invalid product." }
+  }
+
+  let license: ProductLicense | null = null
+  let device: LicenseDevice | null = null
+
+  if (input.license_key && input.client_id) {
+    const keyHash = hashLicenseKey(input.license_key)
+    const found = await c.licenses.findOne({ product_key: productKey, client_id: input.client_id, license_key_hash: keyHash })
+    license = found ? withoutMongoId(found) : null
+  } else {
+    const foundDevice = await c.devices.findOne({ product_key: productKey, install_id: input.install_id })
+    device = foundDevice ? withoutMongoId(foundDevice) : null
+
+    if (!device || device.status === "pending") {
+      await saveCheck({
+        license_id: "",
+        product_key: productKey,
+        client_id: device?.customer_id ?? "",
+        install_id: input.install_id,
+        app_version: input.app_version,
+        status: "pending",
+        valid: false,
+        message: "Device is pending approval.",
+      })
+      return { valid: false, status: "pending", message: "Device is pending approval." }
+    }
+
+    if (device.status === "blocked") {
+      await saveCheck({
+        license_id: device.license_id,
+        product_key: productKey,
+        client_id: device.customer_id,
+        install_id: input.install_id,
+        app_version: input.app_version,
+        status: "blocked",
+        valid: false,
+        message: "Device is blocked. Please contact SparkPair.",
+      })
+      return { valid: false, status: "blocked", message: "Device is blocked. Please contact SparkPair." }
+    }
+
+    if (input.machine_hash && device.machine_hash && input.machine_hash !== device.machine_hash) {
+      await saveCheck({
+        license_id: device.license_id,
+        product_key: productKey,
+        client_id: device.customer_id,
+        install_id: input.install_id,
+        app_version: input.app_version,
+        status: "invalid",
+        valid: false,
+        message: "Device identity changed. Please contact SparkPair.",
+      })
+      return { valid: false, status: "invalid", message: "Device identity changed. Please contact SparkPair." }
+    }
+
+    const foundLicense = device.license_id ? await c.licenses.findOne({ id: device.license_id }) : null
+    license = foundLicense ? withoutMongoId(foundLicense) : null
+  }
+
+  if (!license) {
+    await saveCheck({
+      license_id: "",
+      product_key: productKey,
+      client_id: input.client_id ?? device?.customer_id ?? "",
+      install_id: input.install_id,
+      app_version: input.app_version,
+      status: "invalid",
+      valid: false,
+      message: input.license_key ? "License key was not found." : "No approved license is linked to this device.",
+    })
+    return {
+      valid: false,
+      status: "invalid",
+      message: input.license_key ? "License key was not found." : "No approved license is linked to this device.",
+    }
+  }
+
+  const { status, valid, message } = getLicenseEvaluation(license)
+
   const boundInstallId = license.install_id || input.install_id
   await c.licenses.updateOne(
     { id: license.id },
     {
       $set: {
-        install_id: boundInstallId,
-        last_check_at: checkedAt,
-        updated_at: checkedAt,
+          install_id: boundInstallId,
+          machine_hash: license.machine_hash || input.machine_hash || "",
+          last_check_at: checkedAt,
+          updated_at: checkedAt,
       },
     },
   )
@@ -458,7 +734,7 @@ export async function verifyLicense(input: {
   await saveCheck({
     license_id: license.id,
     product_key: productKey,
-    client_id: input.client_id,
+    client_id: license.client_id,
     install_id: input.install_id,
     app_version: input.app_version,
     status,

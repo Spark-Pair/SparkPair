@@ -77,6 +77,13 @@ export function LicenseForm({
           <Input id="grace_days" name="grace_days" type="number" min="0" defaultValue={license?.grace_days ?? 7} required />
         </div>
         <div className="grid gap-2">
+          <Label htmlFor="allowed_devices">Allowed devices</Label>
+          <Input id="allowed_devices" name="allowed_devices" type="number" min="1" defaultValue={license?.allowed_devices ?? 1} required />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-2">
           <Label htmlFor="allowed_channel">Allowed channel</Label>
           <select
             id="allowed_channel"
@@ -89,6 +96,10 @@ export function LicenseForm({
             <option value="beta">beta</option>
             <option value="dev">dev</option>
           </select>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="machine_hash">Machine hash</Label>
+          <Input id="machine_hash" name="machine_hash" defaultValue={license?.machine_hash} placeholder="Bound from approved device" />
         </div>
       </div>
 

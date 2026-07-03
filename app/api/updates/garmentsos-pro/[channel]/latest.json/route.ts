@@ -22,7 +22,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cha
   }
 
   if (!release) {
-    return NextResponse.json({ error: "No published release found" }, { status: 404 })
+    return NextResponse.json({ error: "No published release found." }, { status: 404 })
   }
 
   const required = [

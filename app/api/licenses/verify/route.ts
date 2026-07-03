@@ -8,11 +8,12 @@ export async function POST(request: Request) {
   const client_id = typeof body?.client_id === "string" ? body.client_id : ""
   const license_key = typeof body?.license_key === "string" ? body.license_key : ""
   const install_id = typeof body?.install_id === "string" ? body.install_id : ""
+  const machine_hash = typeof body?.machine_hash === "string" ? body.machine_hash : ""
   const app_version = typeof body?.app_version === "string" ? body.app_version : ""
 
-  if (!product || !client_id || !license_key || !install_id || !app_version) {
+  if (!product || !install_id || !app_version) {
     return NextResponse.json(
-      { valid: false, status: "invalid", message: "product, client_id, license_key, install_id, and app_version are required." },
+      { valid: false, status: "invalid", message: "product, install_id, and app_version are required." },
       { status: 400 },
     )
   }
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
   let result
 
   try {
-    result = await verifyLicense({ product, client_id, license_key, install_id, app_version })
+    result = await verifyLicense({ product, client_id, license_key, install_id, machine_hash, app_version })
   } catch (error) {
     if (isMongoConnectionError(error)) {
       return NextResponse.json({ valid: false, status: "unavailable", message: mongoConnectionErrorMessage }, { status: 503 })

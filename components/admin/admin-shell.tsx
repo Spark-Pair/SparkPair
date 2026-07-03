@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, KeyRound, PackageOpen, UsersRound } from "lucide-react"
+import { ArrowLeft, HardDrive, KeyRound, PackageOpen, UsersRound } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const adminLinks = [
@@ -19,6 +19,11 @@ const adminLinks = [
     label: "Licenses",
     href: "/admin/licenses",
     icon: KeyRound,
+  },
+  {
+    label: "Devices",
+    href: "/admin/license-devices",
+    icon: HardDrive,
   },
 ]
 

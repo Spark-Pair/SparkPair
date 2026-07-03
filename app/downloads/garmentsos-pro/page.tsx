@@ -26,7 +26,8 @@ const requirements = [
 const installSteps = [
   "Download the latest stable installer.",
   "Run the setup file as an administrator on the target workstation.",
-  "Open GarmentsOS PRO and enter the license key issued by SparkPair.",
+  "Open GarmentsOS PRO so the app can register this device automatically.",
+  "Wait for SparkPair admin approval before production use.",
   "Configure Docker Desktop, users, and backup settings before production use.",
 ]
 
@@ -38,7 +39,7 @@ export default async function GarmentsOsProDownloadPage() {
       <PublicPageShell>
         <section className="px-6 pb-24 pt-32 lg:px-8">
           <div className="mx-auto max-w-6xl">
-            <p className="text-sm text-muted-foreground">No stable GarmentsOS PRO release is available yet.</p>
+            <p className="text-sm text-muted-foreground">No stable release is published yet.</p>
           </div>
         </section>
       </PublicPageShell>

@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge"
-import type { CustomerStatus, LicenseStatus, ReleaseChannel } from "@/lib/garmentsos-pro"
+import type { CustomerStatus, DeviceStatus, LicenseStatus, ReleaseChannel } from "@/lib/garmentsos-pro"
 
 export function ChannelBadge({ channel }: { channel: ReleaseChannel }) {
   const className =
@@ -41,6 +41,21 @@ export function CustomerStatusBadge({ status }: { status: CustomerStatus }) {
           : "border-muted bg-muted text-muted-foreground"
       }
     >
+      {status}
+    </Badge>
+  )
+}
+
+export function DeviceStatusBadge({ status }: { status: DeviceStatus }) {
+  const className =
+    status === "approved"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : status === "blocked"
+        ? "border-destructive/20 bg-destructive/5 text-destructive"
+        : "border-amber-200 bg-amber-50 text-amber-700"
+
+  return (
+    <Badge variant="outline" className={className}>
       {status}
     </Badge>
   )

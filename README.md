@@ -49,3 +49,24 @@ Also check:
 - Restart `npm run dev` after changing `.env.local`.
 
 Never commit real MongoDB passwords or production secrets.
+
+---
+
+## GarmentsOS PRO License Activation
+
+GarmentsOS PRO does not require users to type a license key inside the local app.
+
+The local app should:
+
+- Generate or reuse a local `install_id`.
+- Send `install_id`, `machine_hash`, `machine_name`, and `app_version` to `/api/licenses/register-install`.
+- Keep working offline with its cached active license/grace state when the server is unreachable.
+- Call `/api/licenses/verify` with `product`, `install_id`, `machine_hash`, and `app_version`.
+
+SparkPair admin should:
+
+- Review pending devices in `/admin/license-devices`.
+- Approve and link the device to a customer/license.
+- Block suspicious devices when needed.
+
+Existing clients should update first, then auto-register through the install registration API.
