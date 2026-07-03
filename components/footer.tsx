@@ -539,6 +539,7 @@ export function Footer() {
             <div className="flex items-center gap-6 text-[10px] font-medium tracking-widest text-muted-foreground/50 justify-center md:justify-end uppercase">
               <a href="#" className="hover:text-accent transition-colors duration-300">Privacy</a>
               <a href="#" className="hover:text-accent transition-colors duration-300">Terms</a>
+              <a href="/admin" className="hover:text-accent transition-colors duration-300">Admin</a>
               <motion.button 
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 whileHover={{ scale: 1.05 }}

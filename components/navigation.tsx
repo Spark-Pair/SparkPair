@@ -22,10 +22,11 @@ export function Navigation({ show = true }: { show?: boolean }) {
   }, [])
 
   const navLinks = [
-    { label: "Services", href: "#services" },
-    { label: "Work", href: "#work" },
-    { label: "About", href: "#about" },
-    { label: "Contact", href: "#contact" },
+    { label: "Services", href: "/#services" },
+    { label: "Work", href: "/#work" },
+    { label: "Downloads", href: "/downloads/garmentsos-pro" },
+    { label: "About", href: "/#about" },
+    { label: "Contact", href: "/#contact" },
   ]
 
   return (
@@ -43,7 +44,7 @@ export function Navigation({ show = true }: { show?: boolean }) {
         >
           <div className="max-w-6xl mx-auto px-6 lg:px-8">
             <div className={`flex justify-between items-center transition-all duration-300 ${isScrolled ? "h-16" : "h-20"}`}>
-              <a href="#" className="flex items-center">
+              <a href="/" className="flex items-center">
                 <Image
                   src="/images/spark-pair6.png"
                   alt="SparkPair Logo"
@@ -73,7 +74,7 @@ export function Navigation({ show = true }: { show?: boolean }) {
                   className="px-6 h-10 rounded-full text-base font-medium bg-accent text-accent-foreground shadow-md shadow-accent/15 hover:shadow-lg hover:shadow-accent/25 transition-all duration-500 group cursor-pointer overflow-hidden relative"
                 >
                   <motion.a 
-                    href="#contact"
+                    href="/#contact"
                   >
                     {/* Subtle dark overlay sweep */}
                     <span className="absolute inset-0 bg-black/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
