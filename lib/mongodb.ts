@@ -1,3 +1,4 @@
+import dns from "node:dns"
 import { MongoClient, type Db } from "mongodb"
 
 export const mongoConnectionErrorMessage =
@@ -13,6 +14,56 @@ export class MongoConnectionError extends Error {
 
 declare global {
   var sparkpairMongoClientPromise: Promise<MongoClient> | undefined
+  var sparkpairMongoDnsConfigured: boolean | undefined
+  var sparkpairMongoDnsLogged: boolean | undefined
+}
+
+function getMongoCauseSummary(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return String(error)
+  }
+
+  const maybeError = error as { code?: unknown; message?: unknown; name?: unknown }
+  const parts = [
+    typeof maybeError.name === "string" ? maybeError.name : "Error",
+    typeof maybeError.code === "string" ? `code=${maybeError.code}` : "",
+    typeof maybeError.message === "string" ? maybeError.message : "",
+  ].filter(Boolean)
+
+  return parts.join(": ")
+}
+
+function configureMongoDnsServers() {
+  if (global.sparkpairMongoDnsConfigured) {
+    return
+  }
+
+  global.sparkpairMongoDnsConfigured = true
+
+  const configuredServers = process.env.MONGODB_DNS_SERVERS
+  if (!configuredServers) {
+    return
+  }
+
+  const servers = configuredServers
+    .split(",")
+    .map((server) => server.trim())
+    .filter(Boolean)
+
+  if (!servers.length) {
+    return
+  }
+
+  dns.setServers(servers)
+
+  if (process.env.NODE_ENV === "development" && !global.sparkpairMongoDnsLogged) {
+    global.sparkpairMongoDnsLogged = true
+    console.info(`Mongo DNS servers forced: ${servers.join(",")}`)
+  }
+}
+
+function logMongoConnectionCause(error: unknown) {
+  console.error(`MongoDB connection failed cause: ${getMongoCauseSummary(error)}`)
 }
 
 export async function getMongoClient() {
@@ -27,11 +78,14 @@ export async function getMongoClient() {
   }
 
   if (!global.sparkpairMongoClientPromise) {
+    configureMongoDnsServers()
+
     const client = new MongoClient(uri, {
       serverSelectionTimeoutMS: 8000,
     })
     global.sparkpairMongoClientPromise = client.connect().catch((error) => {
       global.sparkpairMongoClientPromise = undefined
+      logMongoConnectionCause(error)
       throw new MongoConnectionError(error)
     })
   }
@@ -44,6 +98,7 @@ export async function getMongoClient() {
     }
 
     global.sparkpairMongoClientPromise = undefined
+    logMongoConnectionCause(error)
     throw new MongoConnectionError(error)
   }
 }

@@ -1,0 +1,17 @@
+export const adminTheme = {
+  page: "bg-[#f8f6f3]",
+  surface: "bg-white",
+  surfaceMuted: "bg-[#f5f2ee]",
+  surfaceSoft: "bg-[#f1eee9]/70",
+  border: "border-[#ded8d0]",
+  borderStrong: "border-[#cfc6bc]",
+  text: "text-[#171717]",
+  textMuted: "text-[#65605a]",
+  primary: "bg-[#e85f24] text-white",
+  primaryHover: "hover:bg-[#cf4f18]",
+  primaryText: "text-[#e85f24]",
+  primarySoft: "bg-[#e85f24]/10",
+  dangerText: "text-[#dc2626]",
+  dangerHover: "hover:bg-[#dc2626]/10 hover:text-[#b91c1c]",
+  success: "bg-[#dcfce7] text-[#166534] border-[#bbf7d0]",
+}

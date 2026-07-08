@@ -13,8 +13,24 @@ import { projects, type Project } from "../projects"
 
 export function Projects() {
   const containerRef = useRef(null)
+  const [portfolioProjects, setPortfolioProjects] = useState<Project[]>(projects)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [videoProject, setVideoProject] = useState<Project | null>(null)
+
+  // useEffect(() => {
+  //   let isMounted = true
+  //   fetch("/api/portfolio-products")
+  //     .then((response) => (response.ok ? response.json() : null))
+  //     .then((data) => {
+  //       if (isMounted && data?.products?.length) {
+  //         setPortfolioProjects(data.products)
+  //       }
+  //     })
+  //     .catch(() => {})
+  //   return () => {
+  //     isMounted = false
+  //   }
+  // }, [])
 
   return (
     <>
@@ -31,12 +47,12 @@ export function Projects() {
             description="Transforming complex ideas into simple, functional digital products."
           />
 
-          {projects.map((project, index) => (
+          {portfolioProjects.map((project, index) => (
             <ProjectCard 
               key={project.id} 
               project={project} 
               index={index} 
-              total={projects.length}
+              total={portfolioProjects.length}
               onOpenCaseStudy={() => setSelectedProject(project)}
               onOpenVideo={() => setVideoProject(project)}
             />

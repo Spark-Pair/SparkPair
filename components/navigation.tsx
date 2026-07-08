@@ -24,7 +24,7 @@ export function Navigation({ show = true }: { show?: boolean }) {
   const navLinks = [
     { label: "Services", href: "/#services" },
     { label: "Work", href: "/#work" },
-    { label: "Downloads", href: "/downloads/garmentsos-pro" },
+    { label: "Downloads", href: "/downloads" },
     { label: "About", href: "/#about" },
     { label: "Contact", href: "/#contact" },
   ]
@@ -35,7 +35,7 @@ export function Navigation({ show = true }: { show?: boolean }) {
         <motion.nav
           initial={{ y: -100, opacity: 0, scale: 0.94 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.5, ease: [0.10, 0.50, 0.10, 0.50] }}
           className={`fixed top-0 z-50 w-full transition-all duration-300 ${
             isScrolled 
               ? "bg-background/90 backdrop-blur-lg border-b border-border/60 shadow-lg shadow-background/5" 

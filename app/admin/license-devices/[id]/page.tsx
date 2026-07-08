@@ -162,7 +162,7 @@ export default async function LicenseDeviceDetailPage({ params }: { params: Prom
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea id="notes" name="notes" defaultValue={device.notes} />
               </div>
-              <Button className="w-fit rounded-full bg-accent px-6 text-accent-foreground hover:bg-accent/90">
+              <Button variant="primary" className="w-fit">
                 Save device
               </Button>
             </form>
@@ -227,7 +227,7 @@ export default async function LicenseDeviceDetailPage({ params }: { params: Prom
                 <Label htmlFor="license_notes">License notes</Label>
                 <Textarea id="license_notes" name="license_notes" />
               </div>
-              <Button className="w-fit rounded-full bg-accent px-6 text-accent-foreground hover:bg-accent/90">
+              <Button variant="primary" className="w-fit">
                 Create and approve
               </Button>
             </form>

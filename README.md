@@ -66,7 +66,29 @@ The local app should:
 SparkPair admin should:
 
 - Review pending devices in `/admin/license-devices`.
+- Review demo/trial and paid activation requests in `/admin/activation-requests`.
 - Approve and link the device to a customer/license.
 - Block suspicious devices when needed.
 
 Existing clients should update first, then auto-register through the install registration API.
+
+Fresh installs can also submit a customer-assisted activation request to `/api/licenses/request-demo` with business contact details, `install_id`, `machine_hash`, `machine_name`, and `app_version`. Admin approval creates or links the customer, license, and approved device from one screen.
+
+---
+
+## Cloudinary Product Media
+
+SparkPair product/project media is uploaded to Cloudinary from admin-only routes. MongoDB stores only Cloudinary metadata such as `public_id`, `secure_url`, dimensions, format, alt text, captions, and sort order.
+
+Required environment variables:
+
+```env
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CLOUDINARY_UPLOAD_FOLDER=sparkpair/products
+CLOUDINARY_MAX_IMAGE_MB=5
+CLOUDINARY_MAX_VIDEO_MB=50
+```
+
+Cloudinary secrets must stay server-side. Product uploads use `/api/admin/uploads/cloudinary` and are stored under `sparkpair/products/<product-slug>/`.

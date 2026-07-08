@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { isReleaseChannel, productKey, upsertSyncedRelease } from "@/lib/garmentsos-pro"
+import { getProductBySlug, isReleaseChannel, upsertSyncedRelease } from "@/lib/garmentsos-pro"
 import { isMongoConnectionError, mongoConnectionErrorMessage } from "@/lib/mongodb"
 
 function unauthorized() {
@@ -15,9 +15,9 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null)
-  const app = body?.app ?? body?.product
+  const app = body?.app ?? body?.product ?? body?.product_slug
 
-  if (app !== productKey || !body?.version || !isReleaseChannel(String(body?.channel ?? ""))) {
+  if (!app || !body?.version || !isReleaseChannel(String(body?.channel ?? ""))) {
     return NextResponse.json({ error: "Invalid product, version, or channel" }, { status: 400 })
   }
 
@@ -31,8 +31,13 @@ export async function POST(request: Request) {
   let release
 
   try {
+    const product = await getProductBySlug(String(app))
+    if (!product) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 })
+    }
+
     release = await upsertSyncedRelease({
-      app,
+      app: product.slug,
       version: String(body.version),
       channel: body.channel,
       mandatory: Boolean(body.mandatory),

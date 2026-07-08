@@ -86,7 +86,7 @@ export function ReleaseForm({
         </label>
       </div>
 
-      <Button className="w-fit rounded-full bg-accent px-6 text-accent-foreground hover:bg-accent/90">
+      <Button variant="primary" type="submit" className="w-fit">
         {release ? "Save release" : "Create release"}
       </Button>
     </form>

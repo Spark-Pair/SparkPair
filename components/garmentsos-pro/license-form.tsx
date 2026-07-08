@@ -113,7 +113,7 @@ export function LicenseForm({
         <Textarea id="notes" name="notes" className="min-h-28" defaultValue={license?.notes} />
       </div>
 
-      <Button className="w-fit rounded-full bg-accent px-6 text-accent-foreground hover:bg-accent/90">
+      <Button variant="primary" type="submit" className="w-fit">
         {license ? "Save license" : "Create license"}
       </Button>
     </form>
