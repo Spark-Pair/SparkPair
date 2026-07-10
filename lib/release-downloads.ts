@@ -34,6 +34,15 @@ function isGithubReleaseAssetUrl(value: string) {
   return githubReleaseAssetUrlPattern.test(value)
 }
 
+function isSparkPairDownloadUrl(value: string) {
+  try {
+    const url = new URL(value)
+    return url.pathname.startsWith("/api/downloads/")
+  } catch {
+    return false
+  }
+}
+
 function parseGithubReleaseAssetUrl(value: string): GithubAssetReference | null {
   const match = value.match(githubReleaseAssetUrlPattern)
   if (!match) return null
@@ -65,7 +74,12 @@ function releaseDownloadMode() {
 }
 
 function isStorageRedirectAllowed(release: ProductRelease) {
-  return Boolean(release.package_url && isHttpsUrl(release.package_url) && !isGithubReleaseAssetUrl(release.package_url))
+  return Boolean(
+    release.package_url &&
+      isHttpsUrl(release.package_url) &&
+      !isGithubReleaseAssetUrl(release.package_url) &&
+      !isSparkPairDownloadUrl(release.package_url),
+  )
 }
 
 async function fetchGithubAsset(reference: GithubAssetReference) {
