@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { revalidatePath } from "next/cache"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminShell } from "@/components/admin/admin-shell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { adminActionRedirect, getAdminActionNotice } from "@/lib/admin-action-feedback"
 import {
   approveActivationRequest,
   getActivationRequest,
@@ -36,7 +38,7 @@ function RequestStatusBadge({ status }: { status: string }) {
 
 async function approveRequest(id: string, formData: FormData) {
   "use server"
-  await approveActivationRequest(id, {
+  const result = await approveActivationRequest(id, {
     customer_id: String(formData.get("customer_id") ?? ""),
     license_id: String(formData.get("license_id") ?? ""),
     customer_name: String(formData.get("customer_name") ?? ""),
@@ -51,7 +53,11 @@ async function approveRequest(id: string, formData: FormData) {
   revalidatePath("/admin/customers")
   revalidatePath("/admin/licenses")
   revalidatePath("/admin/license-devices")
-  redirect(`/admin/activation-requests/${id}`)
+  adminActionRedirect(
+    `/admin/activation-requests/${id}`,
+    result ? "success" : "error",
+    result ? "Activation request approved and device linked." : "Activation request was not found.",
+  )
 }
 
 async function rejectRequest(id: string, formData: FormData) {
@@ -59,7 +65,7 @@ async function rejectRequest(id: string, formData: FormData) {
   await rejectActivationRequest(id, String(formData.get("notes") ?? ""))
   revalidatePath("/admin/activation-requests")
   revalidatePath(`/admin/activation-requests/${id}`)
-  redirect(`/admin/activation-requests/${id}`)
+  adminActionRedirect(`/admin/activation-requests/${id}`, "success", "Activation request rejected.")
 }
 
 function defaultExpiry() {
@@ -68,8 +74,15 @@ function defaultExpiry() {
   return date.toISOString().slice(0, 10)
 }
 
-export default async function ActivationRequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ActivationRequestDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
   const { id } = await params
+  const notice = await getAdminActionNotice(searchParams)
   const [request, customers, licenses] = await Promise.all([getActivationRequest(id), getCustomers(), getLicenses()])
 
   if (!request) {
@@ -78,6 +91,7 @@ export default async function ActivationRequestDetailPage({ params }: { params: 
 
   return (
     <AdminShell title={request.business_name || request.machine_name || "Activation Request"} description="Approve this request to activate the linked install without asking the client app user for a license key.">
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <div className="grid gap-8">
         <Card>
           <CardHeader>

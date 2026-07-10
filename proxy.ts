@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { adminCookieName, isAdminTokenValid } from "@/lib/admin-auth"
+import { adminCookieName, isAdminAuthenticated } from "@/lib/admin-auth"
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -10,7 +10,7 @@ export async function proxy(request: NextRequest) {
 
   const token = request.cookies.get(adminCookieName)?.value
 
-  if (await isAdminTokenValid(token)) {
+  if (await isAdminAuthenticated(token)) {
     return NextResponse.next()
   }
 

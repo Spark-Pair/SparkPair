@@ -2,12 +2,14 @@ import Link from "next/link"
 import { revalidatePath } from "next/cache"
 import { Ban, Trash2, Unlock } from "lucide-react"
 import { AdminActionItem, AdminRowActions, AdminViewEditActions } from "@/components/admin/admin-actions"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminConfirmButton } from "@/components/admin/admin-confirm-button"
 import { AdminEmptyState } from "@/components/admin/admin-empty-state"
 import { AdminShell } from "@/components/admin/admin-shell"
 import { AdminTableActions, AdminTableCard } from "@/components/admin/admin-table"
 import { DeviceStatusBadge } from "@/components/garmentsos-pro/status-badges"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { adminActionRedirect, getAdminActionNotice } from "@/lib/admin-action-feedback"
 import { deleteStalePendingDevice, getCustomers, getLicenseDevices, getLicenses, getProducts, updateLicenseDevice } from "@/lib/garmentsos-pro"
 
 export const dynamic = "force-dynamic"
@@ -25,6 +27,7 @@ async function blockDeviceAction(formData: FormData) {
     notes: String(formData.get("notes") ?? ""),
   })
   revalidatePath("/admin/license-devices")
+  adminActionRedirect("/admin/license-devices", "success", "Device blocked.")
 }
 
 async function unblockDeviceAction(formData: FormData) {
@@ -36,15 +39,22 @@ async function unblockDeviceAction(formData: FormData) {
     notes: String(formData.get("notes") ?? ""),
   })
   revalidatePath("/admin/license-devices")
+  adminActionRedirect("/admin/license-devices", "success", "Device returned to pending.")
 }
 
 async function deleteDeviceAction(formData: FormData) {
   "use server"
-  await deleteStalePendingDevice(String(formData.get("id") ?? ""))
+  const result = await deleteStalePendingDevice(String(formData.get("id") ?? ""))
   revalidatePath("/admin/license-devices")
+  adminActionRedirect("/admin/license-devices", result.ok ? "success" : "error", result.message)
 }
 
-export default async function LicenseDevicesPage() {
+export default async function LicenseDevicesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
+  const notice = await getAdminActionNotice(searchParams)
   const [devices, customers, licenses, products] = await Promise.all([getLicenseDevices(), getCustomers(), getLicenses(), getProducts()])
   const customerById = new Map(customers.map((customer) => [customer.id, customer]))
   const licenseById = new Map(licenses.map((license) => [license.id, license]))
@@ -55,6 +65,7 @@ export default async function LicenseDevicesPage() {
       title="License Devices"
       description="Pending devices are fresh installs awaiting approval. Approved devices can verify licenses. Blocked devices are denied."
     >
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <AdminTableCard title="Registered installs">
           {devices.length ? (
           <Table>

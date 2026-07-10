@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { adminActionRedirect } from "@/lib/admin-action-feedback"
 import { getProductBySlug, saveProduct, slugifyProduct, type ProductStatus, type ProductType } from "@/lib/garmentsos-pro"
 import { projects } from "@/projects"
 
@@ -11,7 +12,9 @@ function boolValue(formData: FormData, key: string) {
 export async function updatePortfolioProductAction(formData: FormData) {
   const slug = String(formData.get("slug") ?? "")
   const product = await getProductBySlug(slug)
-  if (!product) return
+  if (!product) {
+    adminActionRedirect("/admin/portfolio", "error", "Product was not found.")
+  }
 
   await saveProduct(
     {
@@ -28,9 +31,11 @@ export async function updatePortfolioProductAction(formData: FormData) {
 
   revalidatePath("/admin/portfolio")
   revalidatePath("/")
+  adminActionRedirect("/admin/portfolio", "success", "Portfolio settings updated.")
 }
 
 export async function seedStaticPortfolioAction() {
+  let imported = 0
   for (const project of projects) {
     const slug = slugifyProduct(project.title)
     const existing = await getProductBySlug(slug)
@@ -73,9 +78,11 @@ export async function seedStaticPortfolioAction() {
       update_feed_enabled: false,
       public_download_enabled: false,
     })
+    imported += 1
   }
 
   revalidatePath("/admin/portfolio")
   revalidatePath("/admin/products")
   revalidatePath("/")
+  adminActionRedirect("/admin/portfolio", "success", imported ? `Imported ${imported} portfolio projects.` : "Static portfolio projects are already imported.")
 }

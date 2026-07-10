@@ -2,12 +2,14 @@ import Link from "next/link"
 import { revalidatePath } from "next/cache"
 import { XCircle } from "lucide-react"
 import { AdminActionItem, AdminRowActions, AdminViewEditActions } from "@/components/admin/admin-actions"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminConfirmButton } from "@/components/admin/admin-confirm-button"
 import { AdminEmptyState } from "@/components/admin/admin-empty-state"
 import { AdminShell } from "@/components/admin/admin-shell"
 import { AdminTableActions, AdminTableCard } from "@/components/admin/admin-table"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { adminActionRedirect, getAdminActionNotice } from "@/lib/admin-action-feedback"
 import { getActivationRequests, rejectActivationRequest } from "@/lib/garmentsos-pro"
 
 export const dynamic = "force-dynamic"
@@ -31,9 +33,15 @@ async function rejectRequestAction(formData: FormData) {
   "use server"
   await rejectActivationRequest(String(formData.get("id") ?? ""), String(formData.get("notes") ?? "Rejected from request list."))
   revalidatePath("/admin/activation-requests")
+  adminActionRedirect("/admin/activation-requests", "success", "Activation request rejected.")
 }
 
-export default async function ActivationRequestsPage() {
+export default async function ActivationRequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
+  const notice = await getAdminActionNotice(searchParams)
   const requests = await getActivationRequests()
 
   return (
@@ -41,6 +49,7 @@ export default async function ActivationRequestsPage() {
       title="Activation Requests"
       description="Fresh GarmentsOS PRO installs can request a demo trial or paid activation. Approve a request to create or link the customer, license, and device."
     >
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <AdminTableCard title="Requests">
           {requests.length ? (
             <Table>

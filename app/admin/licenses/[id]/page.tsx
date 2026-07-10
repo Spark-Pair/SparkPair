@@ -1,7 +1,8 @@
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import { PauseCircle, PlayCircle, Trash2 } from "lucide-react"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminConfirmButton } from "@/components/admin/admin-confirm-button"
 import { AdminEmptyState } from "@/components/admin/admin-empty-state"
 import { AdminShell } from "@/components/admin/admin-shell"
@@ -22,6 +23,7 @@ import {
   type ReleaseChannel,
 } from "@/lib/garmentsos-pro"
 import { AdminActionItem } from "@/components/admin/admin-actions"
+import { adminActionRedirect, getAdminActionNotice } from "@/lib/admin-action-feedback"
 
 export const dynamic = "force-dynamic"
 
@@ -47,7 +49,7 @@ async function updateLicense(id: string, formData: FormData) {
 
   revalidatePath("/admin/licenses")
   revalidatePath(`/admin/licenses/${id}`)
-  redirect(`/admin/licenses/${id}`)
+  adminActionRedirect(`/admin/licenses/${id}`, "success", "License updated.")
 }
 
 async function suspendLicense(id: string) {
@@ -55,6 +57,7 @@ async function suspendLicense(id: string) {
   await updateLicenseStatus(id, "suspended")
   revalidatePath("/admin/licenses")
   revalidatePath(`/admin/licenses/${id}`)
+  adminActionRedirect(`/admin/licenses/${id}`, "success", "License suspended.")
 }
 
 async function reactivateLicense(id: string) {
@@ -62,17 +65,29 @@ async function reactivateLicense(id: string) {
   await updateLicenseStatus(id, "active")
   revalidatePath("/admin/licenses")
   revalidatePath(`/admin/licenses/${id}`)
+  adminActionRedirect(`/admin/licenses/${id}`, "success", "License reactivated.")
 }
 
 async function deleteLicense(id: string) {
   "use server"
-  await deleteLicenseIfSafe(id)
+  const result = await deleteLicenseIfSafe(id)
   revalidatePath("/admin/licenses")
-  redirect("/admin/licenses")
+  if (!result.ok) {
+    revalidatePath(`/admin/licenses/${id}`)
+    adminActionRedirect(`/admin/licenses/${id}`, "error", result.message)
+  }
+  adminActionRedirect("/admin/licenses", "success", result.message)
 }
 
-export default async function LicenseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LicenseDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
   const { id } = await params
+  const notice = await getAdminActionNotice(searchParams)
   const cookieStore = await cookies()
   const [license, customers, checks, allDevices] = await Promise.all([getLicense(id), getCustomers(), getLicenseChecks(id), getLicenseDevices()])
   const oneTimeKey = cookieStore.get(`license_key_${id}`)?.value
@@ -85,6 +100,7 @@ export default async function LicenseDetailPage({ params }: { params: Promise<{ 
 
   return (
     <AdminShell title={license.client_name} description="Review license details and verification history.">
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <div className="grid gap-8">
         {oneTimeKey ? (
           <Alert>

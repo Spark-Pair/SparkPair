@@ -2,6 +2,7 @@ import Link from "next/link"
 import { revalidatePath } from "next/cache"
 import { PauseCircle, PlayCircle, Plus, Trash2 } from "lucide-react"
 import { AdminActionItem, AdminRowActions, AdminViewEditActions } from "@/components/admin/admin-actions"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminConfirmButton } from "@/components/admin/admin-confirm-button"
 import { AdminEmptyState } from "@/components/admin/admin-empty-state"
 import { AdminShell } from "@/components/admin/admin-shell"
@@ -9,6 +10,7 @@ import { AdminTableActions, AdminTableCard } from "@/components/admin/admin-tabl
 import { LicenseStatusBadge } from "@/components/garmentsos-pro/status-badges"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { adminActionRedirect, getAdminActionNotice } from "@/lib/admin-action-feedback"
 import { deleteLicenseIfSafe, getCustomers, getLicenses, getProducts, updateLicenseStatus } from "@/lib/garmentsos-pro"
 
 export const dynamic = "force-dynamic"
@@ -17,21 +19,29 @@ async function suspendLicenseAction(formData: FormData) {
   "use server"
   await updateLicenseStatus(String(formData.get("id") ?? ""), "suspended")
   revalidatePath("/admin/licenses")
+  adminActionRedirect("/admin/licenses", "success", "License suspended.")
 }
 
 async function reactivateLicenseAction(formData: FormData) {
   "use server"
   await updateLicenseStatus(String(formData.get("id") ?? ""), "active")
   revalidatePath("/admin/licenses")
+  adminActionRedirect("/admin/licenses", "success", "License reactivated.")
 }
 
 async function deleteLicenseAction(formData: FormData) {
   "use server"
-  await deleteLicenseIfSafe(String(formData.get("id") ?? ""))
+  const result = await deleteLicenseIfSafe(String(formData.get("id") ?? ""))
   revalidatePath("/admin/licenses")
+  adminActionRedirect("/admin/licenses", result.ok ? "success" : "error", result.message)
 }
 
-export default async function LicensesAdminPage() {
+export default async function LicensesAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
+  const notice = await getAdminActionNotice(searchParams)
   const [licenses, customers, products] = await Promise.all([getLicenses(), getCustomers(), getProducts()])
   const customerById = new Map(customers.map((customer) => [customer.id, customer]))
   const productByKey = new Map(products.map((product) => [product.product_key, product]))
@@ -49,6 +59,7 @@ export default async function LicensesAdminPage() {
         </Button>
       }
     >
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <AdminTableCard title="License records">
           {licenses.length ? (
           <Table>

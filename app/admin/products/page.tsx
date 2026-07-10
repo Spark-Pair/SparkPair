@@ -3,17 +3,24 @@ import { Archive, Plus, Trash2 } from "lucide-react"
 import { AdminActionItem, AdminRowActions, AdminViewEditActions } from "@/components/admin/admin-actions"
 import { AdminConfirmButton } from "@/components/admin/admin-confirm-button"
 import { AdminEmptyState } from "@/components/admin/admin-empty-state"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminShell } from "@/components/admin/admin-shell"
 import { AdminTableActions, AdminTableCard } from "@/components/admin/admin-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { getAdminActionNotice } from "@/lib/admin-action-feedback"
 import { getLatestRelease, getProducts } from "@/lib/garmentsos-pro"
 import { archiveProductAction, deleteProductAction } from "./actions"
 
 export const dynamic = "force-dynamic"
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
+  const notice = await getAdminActionNotice(searchParams)
   const products = await getProducts()
   const latest = await Promise.all(products.map((product) => getLatestRelease(product.default_channel, product.slug)))
 
@@ -30,6 +37,7 @@ export default async function ProductsPage() {
         </Button>
       }
     >
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <AdminTableCard title="Product catalog">
           {products.length ? (
             <Table>

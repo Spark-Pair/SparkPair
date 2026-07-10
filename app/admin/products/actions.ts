@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { adminActionRedirect } from "@/lib/admin-action-feedback"
 import {
   archiveProduct,
   deleteProductIfSafe,
@@ -93,11 +94,14 @@ export async function updateProductFromForm(slug: string, formData: FormData) {
 }
 
 export async function archiveProductAction(formData: FormData) {
-  await archiveProduct(String(formData.get("slug") ?? ""))
+  const slug = String(formData.get("slug") ?? "")
+  await archiveProduct(slug)
   revalidatePath("/admin/products")
+  adminActionRedirect("/admin/products", "success", "Product archived.")
 }
 
 export async function deleteProductAction(formData: FormData) {
-  await deleteProductIfSafe(String(formData.get("slug") ?? ""))
+  const result = await deleteProductIfSafe(String(formData.get("slug") ?? ""))
   revalidatePath("/admin/products")
+  adminActionRedirect("/admin/products", result.ok ? "success" : "error", result.message)
 }

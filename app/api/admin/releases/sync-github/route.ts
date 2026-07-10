@@ -46,6 +46,10 @@ export async function POST(request: Request) {
       package_url: String(body.package_url),
       package_sha256: String(body.package_sha256),
       setup_url: String(body.setup_url),
+      github_owner: typeof body.github_owner === "string" ? body.github_owner : undefined,
+      github_repo: typeof body.github_repo === "string" ? body.github_repo : undefined,
+      github_tag: typeof body.github_tag === "string" ? body.github_tag : undefined,
+      github_asset: typeof body.github_asset === "string" ? body.github_asset : undefined,
       notes: String(body.notes),
     })
   } catch (error) {

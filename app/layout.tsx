@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { SmoothScroll } from "@/components/smooth-scroll"
+import { PublicPageTransition } from "@/components/public-page-transition"
 import "./globals.css"
 
 const inter = Inter({
@@ -116,7 +117,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
         <SmoothScroll>
-          <main>{children}</main>
+          <PublicPageTransition>
+            <main>{children}</main>
+          </PublicPageTransition>
         </SmoothScroll>
         <Analytics />
       </body>

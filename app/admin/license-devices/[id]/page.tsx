@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { revalidatePath } from "next/cache"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminShell } from "@/components/admin/admin-shell"
 import { DeviceStatusBadge, LicenseStatusBadge } from "@/components/garmentsos-pro/status-badges"
 import { Button } from "@/components/ui/button"
@@ -8,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { adminActionRedirect, getAdminActionNotice } from "@/lib/admin-action-feedback"
 import {
   createCustomerAndLicenseForDevice,
   getCustomers,
@@ -23,7 +25,7 @@ export const dynamic = "force-dynamic"
 async function updateDevice(id: string, formData: FormData) {
   "use server"
 
-  await updateLicenseDevice(id, {
+  const result = await updateLicenseDevice(id, {
     status: String(formData.get("status") ?? "pending") as DeviceStatus,
     customer_id: String(formData.get("customer_id") ?? ""),
     license_id: String(formData.get("license_id") ?? ""),
@@ -32,13 +34,17 @@ async function updateDevice(id: string, formData: FormData) {
 
   revalidatePath("/admin/license-devices")
   revalidatePath(`/admin/license-devices/${id}`)
-  redirect(`/admin/license-devices/${id}`)
+  adminActionRedirect(
+    `/admin/license-devices/${id}`,
+    result ? "success" : "error",
+    result ? "Device updated." : "Device was not found.",
+  )
 }
 
 async function createFromDevice(id: string, formData: FormData) {
   "use server"
 
-  await createCustomerAndLicenseForDevice(id, {
+  const result = await createCustomerAndLicenseForDevice(id, {
     customer_name: String(formData.get("customer_name") ?? ""),
     customer_email: String(formData.get("customer_email") ?? ""),
     expires_at: String(formData.get("expires_at") ?? ""),
@@ -51,15 +57,26 @@ async function createFromDevice(id: string, formData: FormData) {
   revalidatePath(`/admin/license-devices/${id}`)
   revalidatePath("/admin/customers")
   revalidatePath("/admin/licenses")
-  redirect(`/admin/license-devices/${id}`)
+  adminActionRedirect(
+    `/admin/license-devices/${id}`,
+    result ? "success" : "error",
+    result ? "Customer and license created. Device approved." : "Device was not found.",
+  )
 }
 
 function shortHash(value: string) {
   return value ? `${value.slice(0, 16)}...` : "not provided"
 }
 
-export default async function LicenseDeviceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LicenseDeviceDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
   const { id } = await params
+  const notice = await getAdminActionNotice(searchParams)
   const [device, customers, licenses] = await Promise.all([getLicenseDevice(id), getCustomers(), getLicenses()])
 
   if (!device) {
@@ -70,6 +87,7 @@ export default async function LicenseDeviceDetailPage({ params }: { params: Prom
 
   return (
     <AdminShell title={device.machine_name || device.install_id} description="Approve, block, or link this GarmentsOS PRO install.">
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <div className="grid gap-8">
         <Card>
           <CardHeader>

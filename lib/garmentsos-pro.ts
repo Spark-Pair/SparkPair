@@ -88,6 +88,10 @@ export interface ProductRelease {
   package_url: string
   package_sha256: string
   setup_url: string
+  github_owner?: string
+  github_repo?: string
+  github_tag?: string
+  github_asset?: string
   notes: string
   is_published: boolean
   is_latest: boolean
@@ -630,6 +634,31 @@ export async function getLatestRelease(channel: ReleaseChannel, productSlug = pr
   return fallback ? withoutMongoId(fallback) : null
 }
 
+export async function getPublishedReleaseByVersion(productSlug: string, version: string, channel?: ReleaseChannel) {
+  await ensureGarmentsOsProData()
+
+  const c = await collections()
+  const product = await getProduct(productSlug)
+
+  if (!product) {
+    return null
+  }
+
+  const query: Record<string, unknown> = {
+    product_key: product.product_key,
+    version,
+    is_published: true,
+  }
+
+  if (channel) {
+    query.channel = channel
+  }
+
+  const release = await c.releases.findOne(query, { sort: { released_at: -1 } })
+
+  return release ? withoutMongoId(release) : null
+}
+
 export async function saveRelease(
   input: Omit<ProductRelease, "id" | "product_key" | "product_id" | "product_slug" | "created_at" | "updated_at">,
   id?: string,
@@ -711,6 +740,10 @@ export async function upsertSyncedRelease(input: {
   package_sha256: string
   setup_url: string
   notes: string
+  github_owner?: string
+  github_repo?: string
+  github_tag?: string
+  github_asset?: string
 }) {
   await ensureGarmentsOsProData()
   const c = await collections()
@@ -731,6 +764,10 @@ export async function upsertSyncedRelease(input: {
       package_url: input.package_url,
       package_sha256: input.package_sha256,
       setup_url: input.setup_url,
+      github_owner: input.github_owner,
+      github_repo: input.github_repo,
+      github_tag: input.github_tag,
+      github_asset: input.github_asset,
       notes: input.notes,
       is_published: true,
       is_latest: true,

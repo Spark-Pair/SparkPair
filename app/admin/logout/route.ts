@@ -1,13 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { adminCookieName } from "@/lib/admin-auth"
+import { clearAdminSession } from "@/lib/admin-auth"
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
+  await clearAdminSession()
   const response = NextResponse.redirect(new URL("/admin/login", request.url))
-  response.cookies.set(adminCookieName, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0,
-  })
   return response
 }

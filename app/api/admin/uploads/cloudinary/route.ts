@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { adminCookieName, isAdminTokenValid } from "@/lib/admin-auth"
+import { getAdminTokenFromCookieHeader, isAdminAuthenticated } from "@/lib/admin-auth"
 import { deleteFromCloudinary, uploadToCloudinary, validateCloudinaryFile, type CloudinaryUploadType } from "@/lib/cloudinary"
 
 export const runtime = "nodejs"
@@ -7,14 +7,7 @@ export const runtime = "nodejs"
 const uploadTypes = new Set(["logo", "hero", "gallery", "video"])
 
 async function isAdminRequest(request: Request) {
-  const cookie = request.headers.get("cookie") || ""
-  const token = cookie
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${adminCookieName}=`))
-    ?.split("=")[1]
-
-  return isAdminTokenValid(token)
+  return isAdminAuthenticated(getAdminTokenFromCookieHeader(request.headers.get("cookie")))
 }
 
 export async function POST(request: Request) {

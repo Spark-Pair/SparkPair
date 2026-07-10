@@ -1,9 +1,8 @@
 import type { Metadata } from "next"
 import Image from "next/image"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { AlertCircle, ArrowLeft, LockKeyhole } from "lucide-react"
-import { adminCookieName, createAdminToken, getAdminPassword, isAdminTokenValid } from "@/lib/admin-auth"
+import { getAdminPassword, isAdminAuthenticated, setAdminSession } from "@/lib/admin-auth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,14 +27,7 @@ async function login(formData: FormData) {
     redirect(`/admin/login?error=1&next=${encodeURIComponent(next)}`)
   }
 
-  const cookieStore = await cookies()
-  cookieStore.set(adminCookieName, await createAdminToken(password), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 8,
-  })
+  await setAdminSession(password)
 
   redirect(next.startsWith("/admin") && next !== "/admin/login" ? next : "/admin/licenses")
 }
@@ -45,10 +37,9 @@ export default async function AdminLoginPage({
 }: {
   searchParams: Promise<{ error?: string; next?: string }>
 }) {
-  const [{ error, next }, cookieStore] = await Promise.all([searchParams, cookies()])
-  const token = cookieStore.get(adminCookieName)?.value
+  const { error, next } = await searchParams
 
-  if (await isAdminTokenValid(token)) {
+  if (await isAdminAuthenticated()) {
     redirect(next?.startsWith("/admin") ? next : "/admin/licenses")
   }
 

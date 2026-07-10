@@ -9,7 +9,7 @@ export function UpdateFeedPreview({ release }: { release: ProductRelease }) {
     mandatory: release.mandatory,
     released_at: release.released_at,
     package_file: release.package_file,
-    package_url: release.package_url,
+    package_url: `/api/downloads/${release.product_slug}/${release.version}`,
     package_sha256: release.package_sha256,
     setup_url: release.setup_url,
     notes: release.notes,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getLatestRelease, getProductBySlug, isReleaseChannel } from "@/lib/garmentsos-pro"
 import { isMongoConnectionError, mongoConnectionErrorMessage } from "@/lib/mongodb"
+import { buildSparkPairPackageUrl } from "@/lib/release-downloads"
 
 export async function GET(_request: Request, { params }: { params: Promise<{ productSlug: string; channel: string }> }) {
   const { productSlug, channel } = await params
@@ -28,7 +29,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pro
         mandatory: release.mandatory,
         released_at: release.released_at,
         package_file: release.package_file,
-        package_url: release.package_url,
+        package_url: buildSparkPairPackageUrl(_request.url, product.slug, release.version),
         package_sha256: release.package_sha256,
         setup_url: release.setup_url,
         notes: release.notes,

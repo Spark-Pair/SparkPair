@@ -79,9 +79,9 @@ export default async function ProductDownloadPage({ params }: { params: Promise<
                       </Link>
                     </Button>
                   ) : null}
-                  {release.package_url ? (
+                  {release.package_file ? (
                     <Button asChild className="mx-2 rounded-full px-7 text-accent bg-accent/10 hover:bg-accent/20">
-                      <Link href={release.package_url}>
+                      <Link href={`/api/downloads/${product.slug}/${release.version}`}>
                         <Package className="h-4 w-4" />
                         Download package
                       </Link>

@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache"
 import { Archive, Trash2 } from "lucide-react"
 import { Plus } from "lucide-react"
 import { AdminActionItem, AdminRowActions, AdminViewEditActions } from "@/components/admin/admin-actions"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminConfirmButton } from "@/components/admin/admin-confirm-button"
 import { AdminEmptyState } from "@/components/admin/admin-empty-state"
 import { AdminShell } from "@/components/admin/admin-shell"
@@ -10,6 +11,7 @@ import { AdminTableActions, AdminTableCard } from "@/components/admin/admin-tabl
 import { CustomerStatusBadge } from "@/components/garmentsos-pro/status-badges"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { adminActionRedirect, getAdminActionNotice } from "@/lib/admin-action-feedback"
 import { archiveCustomer, deleteCustomerIfSafe, getCustomers, getLicensesForCustomer } from "@/lib/garmentsos-pro"
 
 export const dynamic = "force-dynamic"
@@ -18,15 +20,22 @@ async function archiveCustomerAction(formData: FormData) {
   "use server"
   await archiveCustomer(String(formData.get("id") ?? ""))
   revalidatePath("/admin/customers")
+  adminActionRedirect("/admin/customers", "success", "Customer archived.")
 }
 
 async function deleteCustomerAction(formData: FormData) {
   "use server"
-  await deleteCustomerIfSafe(String(formData.get("id") ?? ""))
+  const result = await deleteCustomerIfSafe(String(formData.get("id") ?? ""))
   revalidatePath("/admin/customers")
+  adminActionRedirect("/admin/customers", result.ok ? "success" : "error", result.message)
 }
 
-export default async function CustomersPage() {
+export default async function CustomersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
+  const notice = await getAdminActionNotice(searchParams)
   const customers = await getCustomers()
   const counts = await Promise.all(customers.map((customer) => getLicensesForCustomer(customer.id)))
 
@@ -43,6 +52,7 @@ export default async function CustomersPage() {
         </Button>
       }
     >
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <AdminTableCard title="Customer records">
           {customers.length ? (
             <Table>

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminShell } from "@/components/admin/admin-shell"
 import { AdminEmptyState } from "@/components/admin/admin-empty-state"
 import { AdminTableCard } from "@/components/admin/admin-table"
@@ -6,12 +7,18 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { getAdminActionNotice } from "@/lib/admin-action-feedback"
 import { getProducts } from "@/lib/garmentsos-pro"
 import { seedStaticPortfolioAction, updatePortfolioProductAction } from "./actions"
 
 export const dynamic = "force-dynamic"
 
-export default async function PortfolioAdminPage() {
+export default async function PortfolioAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
+  const notice = await getAdminActionNotice(searchParams)
   const products = await getProducts()
 
   return (
@@ -26,6 +33,7 @@ export default async function PortfolioAdminPage() {
         </form>
       }
     >
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <AdminTableCard title="Portfolio visibility">
           {products.length ? (
             <Table>

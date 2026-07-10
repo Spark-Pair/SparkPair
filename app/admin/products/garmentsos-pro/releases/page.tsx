@@ -2,6 +2,7 @@ import Link from "next/link"
 import { revalidatePath } from "next/cache"
 import { CheckCircle2, EyeOff, Plus, Trash2 } from "lucide-react"
 import { AdminActionItem, AdminRowActions, AdminViewEditActions } from "@/components/admin/admin-actions"
+import { AdminActionNotice } from "@/components/admin/admin-action-notice"
 import { AdminConfirmButton } from "@/components/admin/admin-confirm-button"
 import { AdminEmptyState } from "@/components/admin/admin-empty-state"
 import { AdminShell } from "@/components/admin/admin-shell"
@@ -10,6 +11,7 @@ import { ChannelBadge } from "@/components/garmentsos-pro/status-badges"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { adminActionRedirect, getAdminActionNotice } from "@/lib/admin-action-feedback"
 import { deleteReleaseIfSafe, getReleases, setReleaseLatest, unpublishRelease } from "@/lib/garmentsos-pro"
 
 export const dynamic = "force-dynamic"
@@ -19,6 +21,7 @@ async function markLatestAction(formData: FormData) {
   await setReleaseLatest(String(formData.get("id") ?? ""))
   revalidatePath("/admin/products/garmentsos-pro/releases")
   revalidatePath("/downloads/garmentsos-pro")
+  adminActionRedirect("/admin/products/garmentsos-pro/releases", "success", "Release marked latest.")
 }
 
 async function unpublishReleaseAction(formData: FormData) {
@@ -26,15 +29,22 @@ async function unpublishReleaseAction(formData: FormData) {
   await unpublishRelease(String(formData.get("id") ?? ""))
   revalidatePath("/admin/products/garmentsos-pro/releases")
   revalidatePath("/downloads/garmentsos-pro")
+  adminActionRedirect("/admin/products/garmentsos-pro/releases", "success", "Release unpublished.")
 }
 
 async function deleteReleaseAction(formData: FormData) {
   "use server"
-  await deleteReleaseIfSafe(String(formData.get("id") ?? ""))
+  const result = await deleteReleaseIfSafe(String(formData.get("id") ?? ""))
   revalidatePath("/admin/products/garmentsos-pro/releases")
+  adminActionRedirect("/admin/products/garmentsos-pro/releases", result.ok ? "success" : "error", result.message)
 }
 
-export default async function GarmentsOsProReleasesAdminPage() {
+export default async function GarmentsOsProReleasesAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ actionStatus?: string; actionMessage?: string }>
+}) {
+  const notice = await getAdminActionNotice(searchParams)
   const releases = await getReleases()
 
   return (
@@ -50,6 +60,7 @@ export default async function GarmentsOsProReleasesAdminPage() {
         </Button>
       }
     >
+      <AdminActionNotice status={notice.status} message={notice.message} />
       <AdminTableCard title="Product releases">
           {releases.length ? (
           <Table>
