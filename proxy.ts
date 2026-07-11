@@ -10,7 +10,7 @@ export async function proxy(request: NextRequest) {
 
   const token = request.cookies.get(adminCookieName)?.value
 
-  if (await isAdminAuthenticated(token)) {
+  if (await isAdminAuthenticated(token, { logFailures: true, path: pathname })) {
     return NextResponse.next()
   }
 

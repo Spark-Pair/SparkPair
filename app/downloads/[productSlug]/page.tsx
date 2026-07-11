@@ -74,10 +74,10 @@ export default async function ProductDownloadPage({ params }: { params: Promise<
                   <p className="text-sm leading-relaxed text-muted-foreground">{release.notes}</p>
                   {release ? (
                     <Button asChild size="lg" className="h-12 rounded-full bg-accent px-7 text-accent-foreground hover:bg-accent/90">
-                      <Link href={setupDownloadUrl}>
+                      <a href={setupDownloadUrl}>
                         <ArrowDownToLine className="h-4 w-4" />
                         Download Installer
-                      </Link>
+                      </a>
                     </Button>
                   ) : null}
                   {actionUrl ? (

@@ -35,10 +35,10 @@ export function DownloadPanel({ release }: { release: ProductRelease }) {
           </div>
         </div>
         <Button asChild size="lg" className="h-12 rounded-full bg-accent px-7 text-accent-foreground hover:bg-accent/90">
-          <Link href={`/api/downloads/${release.product_slug}/latest/${release.channel}/setup`}>
+          <a href={`/api/downloads/${release.product_slug}/latest/${release.channel}/setup`}>
             <ArrowDownToLine className="h-4 w-4" />
             Download for Windows
-          </Link>
+          </a>
         </Button>
         <Button asChild variant="link" className="h-auto p-0 text-muted-foreground">
           <Link href="/api/updates/garmentsos-pro/stable/latest.json">
