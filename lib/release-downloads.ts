@@ -168,6 +168,10 @@ export function buildSparkPairPackageUrl(requestUrl: string, productSlug: string
   return `${origin.replace(/\/$/, "")}/api/downloads/${encodeURIComponent(productSlug)}/${encodeURIComponent(version)}`
 }
 
+export function buildSparkPairSetupUrl(requestUrl: string, productSlug: string, version: string) {
+  return `${buildSparkPairPackageUrl(requestUrl, productSlug, version)}/setup`
+}
+
 export function validateProductReleaseDownload(product: Product | null, release: ProductRelease | null) {
   if (!product) {
     return jsonError("Product download was not found.", 404)
@@ -220,4 +224,3 @@ export async function createReleasePackageResponse(product: Product, release: Pr
   response.headers.set("X-Package-SHA256", release.package_sha256)
   return response
 }
-

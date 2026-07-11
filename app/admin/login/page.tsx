@@ -27,7 +27,7 @@ async function login(formData: FormData) {
     redirect(`/admin/login?error=1&next=${encodeURIComponent(next)}`)
   }
 
-  await setAdminSession(password)
+  await setAdminSession()
 
   redirect(next.startsWith("/admin") && next !== "/admin/login" ? next : "/admin/licenses")
 }

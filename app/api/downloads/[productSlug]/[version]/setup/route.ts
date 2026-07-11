@@ -131,7 +131,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pro
       owner,
       repo,
       tag,
-      asset: "GarmentsOS-PRO.exe",
+      asset: product.setup_asset_pattern || "GarmentsOS-PRO.exe",
     })
   } catch (error) {
     if (isMongoConnectionError(error)) {

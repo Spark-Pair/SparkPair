@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowDownToLine, CheckCircle2, ExternalLink, Package, PlayCircle } from "lucide-react"
+import { ArrowDownToLine, CheckCircle2, ExternalLink, PlayCircle } from "lucide-react"
 import { PublicPageShell } from "@/components/public-page-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -39,6 +39,7 @@ export default async function ProductDownloadPage({ params }: { params: Promise<
         sort_order: index,
       }))
   const actionUrl = product.demo_url || product.live_url || product.website_url
+  const setupDownloadUrl = `/api/downloads/${product.slug}/latest/stable/setup`
 
   return (
     <PublicPageShell>
@@ -71,19 +72,11 @@ export default async function ProductDownloadPage({ params }: { params: Promise<
               {release ? (
                 <>
                   <p className="text-sm leading-relaxed text-muted-foreground">{release.notes}</p>
-                  {release.setup_url ? (
+                  {release ? (
                     <Button asChild size="lg" className="h-12 rounded-full bg-accent px-7 text-accent-foreground hover:bg-accent/90">
-                      <Link href={release.setup_url}>
+                      <Link href={setupDownloadUrl}>
                         <ArrowDownToLine className="h-4 w-4" />
-                        Download installer
-                      </Link>
-                    </Button>
-                  ) : null}
-                  {release.package_file ? (
-                    <Button asChild className="mx-2 rounded-full px-7 text-accent bg-accent/10 hover:bg-accent/20">
-                      <Link href={`/api/downloads/${product.slug}/${release.version}`}>
-                        <Package className="h-4 w-4" />
-                        Download package
+                        Download Installer
                       </Link>
                     </Button>
                   ) : null}

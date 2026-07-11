@@ -11,7 +11,7 @@ export function UpdateFeedPreview({ release }: { release: ProductRelease }) {
     package_file: release.package_file,
     package_url: `/api/downloads/${release.product_slug}/${release.version}`,
     package_sha256: release.package_sha256,
-    setup_url: release.setup_url,
+    setup_url: `/api/downloads/${release.product_slug}/${release.version}/setup`,
     notes: release.notes,
   }
 

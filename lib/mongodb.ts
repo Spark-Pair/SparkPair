@@ -18,6 +18,44 @@ declare global {
   var sparkpairMongoDnsLogged: boolean | undefined
 }
 
+function sanitizeMongoMessage(message: string) {
+  return message
+    .replace(/mongodb(\+srv)?:\/\/([^:@/\s]+):([^@/\s]+)@/gi, "mongodb$1://$2:<redacted>@")
+    .replace(/(password|pwd)=([^&\s]+)/gi, "$1=<redacted>")
+}
+
+function classifyMongoIssue(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return "unknown"
+  }
+
+  const maybeError = error as { code?: unknown; message?: unknown; name?: unknown }
+  const code = typeof maybeError.code === "string" ? maybeError.code : ""
+  const message = typeof maybeError.message === "string" ? maybeError.message : ""
+
+  if (code === "ENOTFOUND" || code === "ECONNREFUSED" || message.includes("querySrv")) {
+    return "dns_or_srv_lookup"
+  }
+
+  if (message.includes("bad auth") || message.includes("Authentication failed") || code === "AuthenticationFailed") {
+    return "authentication"
+  }
+
+  if (message.includes("Server selection timed out") || message.includes("timed out")) {
+    return "server_selection_timeout"
+  }
+
+  if (code === "MONGODB_URI_MISSING") {
+    return "missing_uri"
+  }
+
+  if (code === "MONGODB_URI_INVALID") {
+    return "malformed_uri"
+  }
+
+  return "network_or_atlas_access"
+}
+
 function getMongoCauseSummary(error: unknown) {
   if (!error || typeof error !== "object") {
     return String(error)
@@ -27,10 +65,31 @@ function getMongoCauseSummary(error: unknown) {
   const parts = [
     typeof maybeError.name === "string" ? maybeError.name : "Error",
     typeof maybeError.code === "string" ? `code=${maybeError.code}` : "",
-    typeof maybeError.message === "string" ? maybeError.message : "",
+    typeof maybeError.message === "string" ? sanitizeMongoMessage(maybeError.message) : "",
   ].filter(Boolean)
 
   return parts.join(": ")
+}
+
+function getMongoUriMetadata(uri: string) {
+  try {
+    const parsed = new URL(uri)
+    return {
+      scheme: parsed.protocol.replace(":", ""),
+      host: parsed.hostname,
+      database: parsed.pathname.replace(/^\//, "") || "(default)",
+      directConnection: parsed.searchParams.get("directConnection") || "",
+      replicaSet: parsed.searchParams.get("replicaSet") || "",
+    }
+  } catch {
+    return {
+      scheme: "invalid",
+      host: "",
+      database: "",
+      directConnection: "",
+      replicaSet: "",
+    }
+  }
 }
 
 function configureMongoDnsServers() {
@@ -62,19 +121,29 @@ function configureMongoDnsServers() {
   }
 }
 
-function logMongoConnectionCause(error: unknown) {
-  console.error(`MongoDB connection failed cause: ${getMongoCauseSummary(error)}`)
+function logMongoConnectionCause(error: unknown, uri?: string) {
+  console.error("MongoDB connection failed.", {
+    issue: classifyMongoIssue(error),
+    cause: getMongoCauseSummary(error),
+    ...(uri ? { uri: getMongoUriMetadata(uri) } : {}),
+  })
 }
 
 export async function getMongoClient() {
   const uri = process.env.MONGODB_URI
 
   if (!uri) {
-    throw new MongoConnectionError(new Error("MONGODB_URI is missing."))
+    const error = Object.assign(new Error("MONGODB_URI is missing."), { code: "MONGODB_URI_MISSING" })
+    logMongoConnectionCause(error)
+    throw new MongoConnectionError(error)
   }
 
   if (!uri.startsWith("mongodb+srv://") && !uri.startsWith("mongodb://")) {
-    throw new MongoConnectionError(new Error("MONGODB_URI must start with mongodb+srv:// or mongodb://."))
+    const error = Object.assign(new Error("MONGODB_URI must start with mongodb+srv:// or mongodb://."), {
+      code: "MONGODB_URI_INVALID",
+    })
+    logMongoConnectionCause(error, uri)
+    throw new MongoConnectionError(error)
   }
 
   if (!global.sparkpairMongoClientPromise) {
@@ -85,7 +154,7 @@ export async function getMongoClient() {
     })
     global.sparkpairMongoClientPromise = client.connect().catch((error) => {
       global.sparkpairMongoClientPromise = undefined
-      logMongoConnectionCause(error)
+      logMongoConnectionCause(error, uri)
       throw new MongoConnectionError(error)
     })
   }
@@ -98,7 +167,7 @@ export async function getMongoClient() {
     }
 
     global.sparkpairMongoClientPromise = undefined
-    logMongoConnectionCause(error)
+    logMongoConnectionCause(error, uri)
     throw new MongoConnectionError(error)
   }
 }
