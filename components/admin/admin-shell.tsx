@@ -122,12 +122,12 @@ export function AdminShell({
                 Back to Site
               </Link>
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/admin/logout">
+            <form action="/admin/logout" method="post">
+              <Button type="submit" variant="outline" className="w-full">
                 <LogOut className="h-4 w-4" />
                 Logout
-              </Link>
-            </Button>
+              </Button>
+            </form>
           </div>
         </aside>
 
@@ -146,12 +146,12 @@ export function AdminShell({
                   Site
                 </Link>
               </Button>
-              <Button asChild variant="ghost" size="sm" className="rounded-full lg:hidden">
-                <Link href="/admin/logout">
+              <form action="/admin/logout" method="post" className="lg:hidden">
+                <Button type="submit" variant="ghost" size="sm" className="rounded-full">
                   <LogOut className="h-4 w-4" />
                   Logout
-                </Link>
-              </Button>
+                </Button>
+              </form>
             </div>
           </div>
           {children}

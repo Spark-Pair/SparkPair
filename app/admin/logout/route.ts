@@ -2,6 +2,10 @@ import { NextResponse, type NextRequest } from "next/server"
 import { adminCookieName, adminCookieOptions, clearAdminSession } from "@/lib/admin-auth"
 
 export async function GET(request: NextRequest) {
+  return NextResponse.redirect(new URL("/admin", request.url), { status: 303 })
+}
+
+export async function POST(request: NextRequest) {
   await clearAdminSession()
   const response = NextResponse.redirect(new URL("/admin/login", request.url))
   response.cookies.set(adminCookieName, "", {
