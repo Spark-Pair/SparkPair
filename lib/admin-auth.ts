@@ -7,10 +7,10 @@ export type AdminSessionValidationReason =
   | "valid"
   | "missing_cookie"
   | "expired"
-  | "bad_signature"
+  | "invalid_signature"
   | "missing_secret"
   | "legacy_token"
-  | "invalid_format"
+  | "malformed_token"
   | "validation_error"
 
 export type AdminSessionValidation = {
@@ -90,7 +90,7 @@ export async function validateAdminSessionToken(token?: string): Promise<AdminSe
     const issuedAt = Number(parts[1])
 
     if (!Number.isFinite(issuedAt)) {
-      return { authenticated: false, reason: "invalid_format" }
+      return { authenticated: false, reason: "malformed_token" }
     }
 
     const now = Math.floor(Date.now() / 1000)
@@ -100,12 +100,12 @@ export async function validateAdminSessionToken(token?: string): Promise<AdminSe
 
     const payload = `${parts[0]}.${parts[1]}`
     const valid = parts[2] === (await createAdminSignature(payload))
-    return valid ? { authenticated: true, reason: "valid" } : { authenticated: false, reason: "bad_signature" }
+    return valid ? { authenticated: true, reason: "valid" } : { authenticated: false, reason: "invalid_signature" }
   }
 
   // Legacy compatibility for users who logged in before signed session tokens.
   const validLegacyToken = token === (await createLegacyAdminToken())
-  return validLegacyToken ? { authenticated: true, reason: "legacy_token" } : { authenticated: false, reason: "bad_signature" }
+  return validLegacyToken ? { authenticated: true, reason: "legacy_token" } : { authenticated: false, reason: "invalid_signature" }
 }
 
 export async function setAdminSession() {

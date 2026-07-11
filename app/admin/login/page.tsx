@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import { redirect } from "next/navigation"
 import { AlertCircle, ArrowLeft, LockKeyhole } from "lucide-react"
-import { getAdminPassword, isAdminAuthenticated, setAdminSession } from "@/lib/admin-auth"
+import { isAdminAuthenticated } from "@/lib/admin-auth"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,21 +15,6 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
-}
-
-async function login(formData: FormData) {
-  "use server"
-
-  const password = String(formData.get("password") ?? "")
-  const next = String(formData.get("next") ?? "/admin/licenses")
-
-  if (password !== getAdminPassword()) {
-    redirect(`/admin/login?error=1&next=${encodeURIComponent(next)}`)
-  }
-
-  await setAdminSession()
-
-  redirect(next.startsWith("/admin") && next !== "/admin/login" ? next : "/admin/licenses")
 }
 
 export default async function AdminLoginPage({
@@ -75,7 +60,7 @@ export default async function AdminLoginPage({
               </Alert>
             ) : null}
 
-            <form action={login} className="space-y-5">
+            <form action="/admin/login/session" method="post" className="space-y-5">
               <input type="hidden" name="next" value={next ?? "/admin/licenses"} />
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
