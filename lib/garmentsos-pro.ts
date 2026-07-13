@@ -237,7 +237,7 @@ function garmentsOsProduct(now: string): Product {
     category: "Desktop ERP",
     tech_stack: ["PHP", "Laravel", "SQLite 3"],
     github_owner: process.env.GITHUB_RELEASE_OWNER || "Spark-Pair",
-    github_repo: process.env.GITHUB_RELEASE_REPO || "garmentsos-pro-experiment",
+    github_repo: process.env.GITHUB_RELEASE_REPO || "garmentsos-pro",
     github_branch: "main",
     release_tag_prefix: "v",
     package_asset_pattern: "garmentsos-pro-{version}.zip",
