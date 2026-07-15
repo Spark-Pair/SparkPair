@@ -23,7 +23,17 @@ export async function POST(request: Request) {
 
   if (!product || !install_id || !app_version) {
     return NextResponse.json(
-      { valid: false, status: "invalid", message: "product, install_id, and app_version are required." },
+      {
+        valid: false,
+        allowed: false,
+        status: "invalid",
+        state: "invalid_request",
+        code: "missing_required_fields",
+        http_status: 400,
+        device_approval: "unknown",
+        rebind_performed: false,
+        message: "product, install_id, and app_version are required.",
+      },
       { status: 400 },
     )
   }
@@ -48,11 +58,24 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     if (isMongoConnectionError(error)) {
-      return NextResponse.json({ valid: false, status: "unavailable", message: mongoConnectionErrorMessage }, { status: 503 })
+      return NextResponse.json(
+        {
+          valid: false,
+          allowed: false,
+          status: "unavailable",
+          state: "server_unavailable",
+          code: "mongodb_unavailable",
+          http_status: 503,
+          device_approval: "unknown",
+          rebind_performed: false,
+          message: mongoConnectionErrorMessage,
+        },
+        { status: 503 },
+      )
     }
 
     throw error
   }
 
-  return NextResponse.json(result, { status: result.valid ? 200 : 200 })
+  return NextResponse.json({ ...result, http_status: 200 }, { status: 200 })
 }

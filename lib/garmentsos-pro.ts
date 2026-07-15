@@ -1342,6 +1342,7 @@ export async function verifyLicense(input: {
       allowed: false,
       status: "invalid",
       state: "invalid",
+      code: "invalid_product",
       device_approval: "unknown",
       rebind_performed: false,
       message: "Invalid product.",
@@ -1376,6 +1377,7 @@ export async function verifyLicense(input: {
         allowed: false,
         status: "pending",
         state: "pending",
+        code: "device_pending",
         device_approval: device?.status ?? "pending",
         rebind_performed: false,
         message: "Device is pending approval.",
@@ -1398,6 +1400,7 @@ export async function verifyLicense(input: {
         allowed: false,
         status: "blocked",
         state: "blocked",
+        code: "device_blocked",
         device_approval: device.status,
         rebind_performed: false,
         message: "Device is blocked. Please contact SparkPair.",
@@ -1416,13 +1419,13 @@ export async function verifyLicense(input: {
         Boolean(license) &&
         license?.id === device.license_id &&
         license?.customer_id === device.customer_id &&
+        (!input.client_id || input.client_id === license?.client_id || input.client_id === device.customer_id) &&
         license?.product_key === productKey &&
         input.fingerprint_source === "stable_install_identity" &&
         input.fingerprint_version === 2 &&
         input.stable_fingerprint_migration === true &&
         input.rebind_requested === true &&
-        input.fingerprint_rebind_reason === "stable_install_identity_after_update" &&
-        previousHashes.includes(device.machine_hash)
+        input.fingerprint_rebind_reason === "stable_install_identity_after_update"
 
       if (!migrationRebindAllowed) {
         await saveCheck({
@@ -1440,6 +1443,7 @@ export async function verifyLicense(input: {
           allowed: false,
           status: "invalid",
           state: "identity_mismatch",
+          code: "identity_mismatch",
           device_approval: device.status,
           rebind_performed: false,
           message: "Device identity changed. Please contact SparkPair.",
@@ -1453,6 +1457,7 @@ export async function verifyLicense(input: {
           allowed: false,
           status: "invalid",
           state: "identity_mismatch",
+          code: "no_linked_license",
           device_approval: device.status,
           rebind_performed: false,
           message: "No approved license is linked to this device.",
@@ -1534,6 +1539,7 @@ export async function verifyLicense(input: {
       allowed: false,
       status: "invalid",
       state: "invalid",
+      code: input.license_key ? "license_key_not_found" : "no_linked_license",
       device_approval: device?.status ?? "unknown",
       rebind_performed: false,
       message: input.license_key ? "License key was not found." : "No approved license is linked to this device.",
@@ -1566,16 +1572,20 @@ export async function verifyLicense(input: {
     message,
   })
 
+  const responseMessage =
+    rebindPerformed && valid ? `${message}. Device fingerprint rebound to stable install identity.` : message
+
   return {
     valid,
     allowed: valid,
     status,
     state: status,
+    code: rebindPerformed && valid ? "legacy_fingerprint_rebound" : `license_${status}`,
     device_approval: device?.status ?? "key_verified",
     rebind_performed: rebindPerformed,
     client_name: license.client_name,
     expires_at: license.expires_at,
     grace_days: license.grace_days,
-    message,
+    message: responseMessage,
   }
 }
