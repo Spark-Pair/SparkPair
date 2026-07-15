@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { ProductRelease } from "@/lib/garmentsos-pro"
 
 export function UpdateFeedPreview({ release }: { release: ProductRelease }) {
+  const githubBase = `https://github.com/Spark-Pair/garmentsos-pro/releases/download/v${release.version}`
   const payload = {
     app: "garmentsos-pro",
     version: release.version,
@@ -9,9 +10,9 @@ export function UpdateFeedPreview({ release }: { release: ProductRelease }) {
     mandatory: release.mandatory,
     released_at: release.released_at,
     package_file: release.package_file,
-    package_url: `/api/downloads/${release.product_slug}/${release.version}`,
+    package_url: `${githubBase}/${release.package_file || `garmentsos-pro-${release.version}.zip`}`,
     package_sha256: release.package_sha256,
-    setup_url: `/api/downloads/${release.product_slug}/${release.version}/setup`,
+    setup_url: `${githubBase}/GarmentsOS-PRO.exe`,
     notes: release.notes,
   }
 

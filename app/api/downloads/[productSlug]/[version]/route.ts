@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getProductBySlug, getPublishedReleaseByVersion } from "@/lib/garmentsos-pro"
 import { isMongoConnectionError, mongoConnectionErrorMessage } from "@/lib/mongodb"
-import { createReleasePackageResponse, validateProductReleaseDownload } from "@/lib/release-downloads"
+import { redirectToReleaseAsset, validateProductReleaseDownload } from "@/lib/release-downloads"
 
 export const runtime = "nodejs"
 
@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pro
       return NextResponse.json({ error: "Published release was not found." }, { status: 404 })
     }
 
-    return createReleasePackageResponse(product, release)
+    return redirectToReleaseAsset(product, release, "package")
   } catch (error) {
     if (isMongoConnectionError(error)) {
       return NextResponse.json({ error: mongoConnectionErrorMessage }, { status: 503 })

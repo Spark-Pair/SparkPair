@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
-import { getLatestRelease, isReleaseChannel } from "@/lib/garmentsos-pro"
+import { getLatestRelease, getProductBySlug, isReleaseChannel } from "@/lib/garmentsos-pro"
 import { isMongoConnectionError, mongoConnectionErrorMessage } from "@/lib/mongodb"
-import { buildSparkPairPackageUrl, buildSparkPairSetupUrl } from "@/lib/release-downloads"
+import { buildGithubReleaseAssetUrl } from "@/lib/release-downloads"
 
 export async function GET(_request: Request, { params }: { params: Promise<{ channel: string }> }) {
   const { channel } = await params
@@ -11,9 +11,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cha
   }
 
   let release
+  let product
 
   try {
     release = await getLatestRelease(channel)
+    product = await getProductBySlug("garmentsos-pro")
   } catch (error) {
     if (isMongoConnectionError(error)) {
       return NextResponse.json({ error: mongoConnectionErrorMessage }, { status: 503 })
@@ -24,6 +26,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cha
 
   if (!release) {
     return NextResponse.json({ error: "No published release found." }, { status: 404 })
+  }
+
+  if (!product) {
+    return NextResponse.json({ error: "Product update feed not found." }, { status: 404 })
   }
 
   const required = [
@@ -46,9 +52,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cha
       mandatory: release.mandatory,
       released_at: release.released_at,
       package_file: release.package_file,
-      package_url: buildSparkPairPackageUrl(_request.url, "garmentsos-pro", release.version),
+      package_url: buildGithubReleaseAssetUrl(product, release, "package"),
       package_sha256: release.package_sha256,
-      setup_url: buildSparkPairSetupUrl(_request.url, "garmentsos-pro", release.version),
+      setup_url: buildGithubReleaseAssetUrl(product, release, "setup"),
       notes: release.notes,
     },
     {

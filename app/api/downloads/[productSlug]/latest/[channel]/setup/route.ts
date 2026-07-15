@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { getLatestRelease, getProductBySlug, isReleaseChannel } from "@/lib/garmentsos-pro"
 import { isMongoConnectionError, mongoConnectionErrorMessage } from "@/lib/mongodb"
+import { redirectToReleaseAsset, validateProductReleaseDownload } from "@/lib/release-downloads"
 
 export const runtime = "nodejs"
 
-export async function GET(request: Request, { params }: { params: Promise<{ productSlug: string; channel: string }> }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ productSlug: string; channel: string }> }) {
   const { productSlug, channel } = await params
 
   if (!isReleaseChannel(channel)) {
@@ -20,16 +21,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ prod
 
     const release = await getLatestRelease(channel, product.slug)
 
-    if (!release || !release.is_published) {
+    const validationError = validateProductReleaseDownload(product, release)
+
+    if (validationError) {
+      return validationError
+    }
+
+    if (!product || !release) {
       return NextResponse.json({ error: "Published release was not found." }, { status: 404 })
     }
 
-    return NextResponse.redirect(new URL(`/api/downloads/${product.slug}/${release.version}/setup`, request.url), {
-      status: 302,
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    })
+    return redirectToReleaseAsset(product, release, "setup")
   } catch (error) {
     if (isMongoConnectionError(error)) {
       return NextResponse.json({ error: mongoConnectionErrorMessage }, { status: 503 })
@@ -38,4 +40,3 @@ export async function GET(request: Request, { params }: { params: Promise<{ prod
     throw error
   }
 }
-
