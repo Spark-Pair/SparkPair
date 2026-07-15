@@ -10,6 +10,16 @@ export async function POST(request: Request) {
   const install_id = typeof body?.install_id === "string" ? body.install_id : ""
   const machine_hash = typeof body?.machine_hash === "string" ? body.machine_hash : ""
   const app_version = typeof body?.app_version === "string" ? body.app_version : ""
+  const previous_machine_hash = typeof body?.previous_machine_hash === "string" ? body.previous_machine_hash : ""
+  const previous_machine_hashes = Array.isArray(body?.previous_machine_hashes)
+    ? body.previous_machine_hashes.filter((value: unknown): value is string => typeof value === "string")
+    : []
+  const fingerprint_source = typeof body?.fingerprint_source === "string" ? body.fingerprint_source : ""
+  const fingerprint_version = Number(body?.fingerprint_version ?? 0)
+  const stable_fingerprint_migration = body?.stable_fingerprint_migration === true
+  const rebind_requested = body?.rebind_requested === true
+  const fingerprint_rebind_reason =
+    typeof body?.fingerprint_rebind_reason === "string" ? body.fingerprint_rebind_reason : ""
 
   if (!product || !install_id || !app_version) {
     return NextResponse.json(
@@ -21,7 +31,21 @@ export async function POST(request: Request) {
   let result
 
   try {
-    result = await verifyLicense({ product, client_id, license_key, install_id, machine_hash, app_version })
+    result = await verifyLicense({
+      product,
+      client_id,
+      license_key,
+      install_id,
+      machine_hash,
+      app_version,
+      previous_machine_hash,
+      previous_machine_hashes,
+      fingerprint_source,
+      fingerprint_version,
+      stable_fingerprint_migration,
+      rebind_requested,
+      fingerprint_rebind_reason,
+    })
   } catch (error) {
     if (isMongoConnectionError(error)) {
       return NextResponse.json({ valid: false, status: "unavailable", message: mongoConnectionErrorMessage }, { status: 503 })

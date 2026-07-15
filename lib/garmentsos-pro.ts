@@ -114,6 +114,7 @@ export interface ProductLicense {
   allowed_devices: number
   install_id: string
   machine_hash: string
+  legacy_machine_hashes?: string[]
   notes: string
   last_check_at: string
   created_at: string
@@ -132,6 +133,10 @@ export interface LicenseDevice {
   status: DeviceStatus
   customer_id: string
   license_id: string
+  legacy_machine_hashes?: string[]
+  fingerprint_source?: string
+  fingerprint_version?: number
+  last_rebind_at?: string
   first_seen_at: string
   last_seen_at: string
   approved_at: string
@@ -161,6 +166,7 @@ export interface ActivityLog {
   subject_type: string
   subject_id: string
   message: string
+  details?: Record<string, unknown>
   created_at: string
 }
 
@@ -348,7 +354,13 @@ export async function ensureGarmentsOsProData() {
   await indexesPromise
 }
 
-async function recordActivity(type: string, subject_type: string, subject_id: string, message: string) {
+async function recordActivity(
+  type: string,
+  subject_type: string,
+  subject_id: string,
+  message: string,
+  details?: Record<string, unknown>,
+) {
   const c = await collections()
   const now = nowIso()
   await c.activity.insertOne({
@@ -358,6 +370,7 @@ async function recordActivity(type: string, subject_type: string, subject_id: st
     subject_type,
     subject_id,
     message,
+    details,
     created_at: now,
   })
 }
@@ -1291,6 +1304,13 @@ export async function verifyLicense(input: {
   install_id: string
   machine_hash?: string
   app_version: string
+  previous_machine_hash?: string
+  previous_machine_hashes?: string[]
+  fingerprint_source?: string
+  fingerprint_version?: number
+  stable_fingerprint_migration?: boolean
+  rebind_requested?: boolean
+  fingerprint_rebind_reason?: string
 }) {
   await ensureGarmentsOsProData()
   const c = await collections()
@@ -1317,11 +1337,20 @@ export async function verifyLicense(input: {
       valid: false,
       message: "Invalid product.",
     })
-    return { valid: false, status: "invalid", message: "Invalid product." }
+    return {
+      valid: false,
+      allowed: false,
+      status: "invalid",
+      state: "invalid",
+      device_approval: "unknown",
+      rebind_performed: false,
+      message: "Invalid product.",
+    }
   }
 
   let license: ProductLicense | null = null
   let device: LicenseDevice | null = null
+  let rebindPerformed = false
 
   if (input.license_key && input.client_id) {
     const keyHash = hashLicenseKey(input.license_key)
@@ -1342,7 +1371,15 @@ export async function verifyLicense(input: {
         valid: false,
         message: "Device is pending approval.",
       })
-      return { valid: false, status: "pending", message: "Device is pending approval." }
+      return {
+        valid: false,
+        allowed: false,
+        status: "pending",
+        state: "pending",
+        device_approval: device?.status ?? "pending",
+        rebind_performed: false,
+        message: "Device is pending approval.",
+      }
     }
 
     if (device.status === "blocked") {
@@ -1356,25 +1393,129 @@ export async function verifyLicense(input: {
         valid: false,
         message: "Device is blocked. Please contact SparkPair.",
       })
-      return { valid: false, status: "blocked", message: "Device is blocked. Please contact SparkPair." }
-    }
-
-    if (input.machine_hash && device.machine_hash && input.machine_hash !== device.machine_hash) {
-      await saveCheck({
-        license_id: device.license_id,
-        product_key: productKey,
-        client_id: device.customer_id,
-        install_id: input.install_id,
-        app_version: input.app_version,
-        status: "invalid",
+      return {
         valid: false,
-        message: "Device identity changed. Please contact SparkPair.",
-      })
-      return { valid: false, status: "invalid", message: "Device identity changed. Please contact SparkPair." }
+        allowed: false,
+        status: "blocked",
+        state: "blocked",
+        device_approval: device.status,
+        rebind_performed: false,
+        message: "Device is blocked. Please contact SparkPair.",
+      }
     }
 
     const foundLicense = device.license_id ? await c.licenses.findOne({ id: device.license_id }) : null
     license = foundLicense ? withoutMongoId(foundLicense) : null
+
+    if (input.machine_hash && device.machine_hash && input.machine_hash !== device.machine_hash) {
+      const previousHashes = [input.previous_machine_hash, ...(input.previous_machine_hashes ?? [])]
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value))
+      const migrationRebindAllowed =
+        device.status === "approved" &&
+        Boolean(license) &&
+        license?.id === device.license_id &&
+        license?.customer_id === device.customer_id &&
+        license?.product_key === productKey &&
+        input.fingerprint_source === "stable_install_identity" &&
+        input.fingerprint_version === 2 &&
+        input.stable_fingerprint_migration === true &&
+        input.rebind_requested === true &&
+        input.fingerprint_rebind_reason === "stable_install_identity_after_update" &&
+        previousHashes.includes(device.machine_hash)
+
+      if (!migrationRebindAllowed) {
+        await saveCheck({
+          license_id: device.license_id,
+          product_key: productKey,
+          client_id: device.customer_id,
+          install_id: input.install_id,
+          app_version: input.app_version,
+          status: "invalid",
+          valid: false,
+          message: "Device identity changed. Please contact SparkPair.",
+        })
+        return {
+          valid: false,
+          allowed: false,
+          status: "invalid",
+          state: "identity_mismatch",
+          device_approval: device.status,
+          rebind_performed: false,
+          message: "Device identity changed. Please contact SparkPair.",
+        }
+      }
+
+      const reboundLicense = license
+      if (!reboundLicense) {
+        return {
+          valid: false,
+          allowed: false,
+          status: "invalid",
+          state: "identity_mismatch",
+          device_approval: device.status,
+          rebind_performed: false,
+          message: "No approved license is linked to this device.",
+        }
+      }
+
+      const oldMachineHash = device.machine_hash
+      const nextLegacyHashes = Array.from(new Set([...(device.legacy_machine_hashes ?? []), oldMachineHash, ...previousHashes]))
+      const now = nowIso()
+
+      await Promise.all([
+        c.devices.updateOne(
+          { id: device.id, status: "approved", license_id: device.license_id, customer_id: device.customer_id },
+          {
+            $set: {
+              machine_hash: input.machine_hash,
+              legacy_machine_hashes: nextLegacyHashes,
+              fingerprint_source: input.fingerprint_source,
+              fingerprint_version: input.fingerprint_version,
+              last_rebind_at: now,
+              last_seen_at: now,
+              app_version: input.app_version,
+              updated_at: now,
+            },
+          },
+        ),
+        c.licenses.updateOne(
+          { id: reboundLicense.id, customer_id: device.customer_id },
+          {
+            $set: {
+              machine_hash: input.machine_hash,
+              legacy_machine_hashes: Array.from(new Set([...(reboundLicense.legacy_machine_hashes ?? []), oldMachineHash, ...previousHashes])),
+              updated_at: now,
+            },
+          },
+        ),
+        recordActivity("legacy_fingerprint_rebound", "device", device.id, "Legacy device fingerprint rebound to stable install identity.", {
+          old_machine_hash: oldMachineHash,
+          new_machine_hash: input.machine_hash,
+          install_id: input.install_id,
+          customer_id: device.customer_id,
+          license_id: device.license_id,
+          app_version: input.app_version,
+          fingerprint_source: input.fingerprint_source,
+          fingerprint_version: input.fingerprint_version,
+          fingerprint_rebind_reason: input.fingerprint_rebind_reason,
+        }),
+      ])
+
+      device = {
+        ...device,
+        machine_hash: input.machine_hash,
+        legacy_machine_hashes: nextLegacyHashes,
+        fingerprint_source: input.fingerprint_source,
+        fingerprint_version: input.fingerprint_version,
+        last_rebind_at: now,
+        last_seen_at: now,
+        app_version: input.app_version,
+        updated_at: now,
+      }
+      license = { ...reboundLicense, machine_hash: input.machine_hash }
+      rebindPerformed = true
+    }
   }
 
   if (!license) {
@@ -1390,7 +1531,11 @@ export async function verifyLicense(input: {
     })
     return {
       valid: false,
+      allowed: false,
       status: "invalid",
+      state: "invalid",
+      device_approval: device?.status ?? "unknown",
+      rebind_performed: false,
       message: input.license_key ? "License key was not found." : "No approved license is linked to this device.",
     }
   }
@@ -1423,7 +1568,11 @@ export async function verifyLicense(input: {
 
   return {
     valid,
+    allowed: valid,
     status,
+    state: status,
+    device_approval: device?.status ?? "key_verified",
+    rebind_performed: rebindPerformed,
     client_name: license.client_name,
     expires_at: license.expires_at,
     grace_days: license.grace_days,
